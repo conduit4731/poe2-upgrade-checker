@@ -175,10 +175,13 @@
         <div><h2 id="charTitle">Character</h2><div class="sub" id="charSub">Your character as Path of Building calculates it, with the gear you copied in game.</div></div>
         <div class="page-actions"><button id="charRefresh">Recalculate</button></div>
       </header>
-      <section class="card-p build-panel" id="buildCard">
-        <h3>Build settings</h3>
+      <div id="charBody"><div class="card-p dim">Loading…</div></div>
+      <details class="card-p char-settings" id="charSettings">
+        <summary><span class="cs-title">Build &amp; guide settings</span><span class="cs-sum" id="charSettingsSum"></span></summary>
+      <section class="build-panel" id="buildCard">
+        <h4 class="cs-h">Build</h4>
         <div class="set-row bp-row">
-          <div class="set-label"><span class="set-name">Build</span><div class="pob-src" id="pobSource"></div><div class="dim" id="pobNone">No build loaded yet.</div></div>
+          <div class="set-label"><span class="set-name">Loaded</span><div class="pob-src" id="pobSource"></div><div class="dim" id="pobNone">No build loaded yet.</div></div>
           <div class="set-ctl"><button id="pobChangeBtn">Load another build…</button></div>
         </div>
         <div class="bp-import" id="pobImportRow">
@@ -205,12 +208,11 @@
           <div class="help">Make sure PoB's tree, skills and Configuration match how you play. Items you copy in game (F2) replace PoB's in their slot. With a guide's .build file, the guide's gear is only used in slots where you haven't saved your own item.</div>
         </details>
       </section>
-      <section class="card-p steps-panel" id="stepsCard">
-        <h3 class="steps-head"><span>Guide steps</span>
-          <span class="steps-actions"><button class="link hidden" id="stepsEditBtn">Change order</button><button id="stepsAddBtn">Add step files…</button></span></h3>
-        <div id="stepsBody"><div class="dim">Loading…</div></div>
-      </section>
-      <div id="charBody"><div class="card-p dim">Loading…</div></div>
+      <section class="steps-panel" id="stepsCard">
+          <h4 class="cs-h steps-head"><span>Guide steps</span><span class="steps-actions"><button id="stepsAddBtn">Add step files…</button></span></h4>
+          <div id="stepsBody"><div class="dim">Loading…</div></div>
+        </section>
+      </details>
     </section>
 
     <section class="tab" id="tab-spend">

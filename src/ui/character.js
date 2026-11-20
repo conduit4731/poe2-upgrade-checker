@@ -24,7 +24,7 @@
     busy = true;
     const body = $('#charBody');
     try {
-      const [st, d] = await Promise.all([window.api.getState(), window.api.pobSheet(!!refresh)]);
+      const [st, d] = await Promise.all([window.api.getState(), window.api.pobSheet(!!refresh), window.refreshSteps ? window.refreshSteps() : null]);
       const prof = (st.profiles || []).find((p) => p.active);
       $('#charTitle').textContent = prof ? prof.name : 'Character';
       sheetAt = d.at || null;
@@ -37,6 +37,12 @@
       // widths set here: the page's security policy doesn't allow inline styles
       body.querySelectorAll('[data-w]').forEach((e) => { e.style.width = `${Number(e.dataset.w) || 0}%`; });
       renderStrings();
+      if (window.renderStepBar) window.renderStepBar();
+      bindGems(body);
+      // the settings group: open while there's no build to show (that's where you load one)
+      const cs = $('#charSettings');
+      if (cs && !cs.dataset.touched) cs.open = !d.sheet;
+      settingsSummary(d);
       if (d.sheet) fillMainSkills();
       body.querySelectorAll('[data-goto]').forEach((b) => b.addEventListener('click', () => document.querySelector(`.tabs button[data-tab="${b.dataset.goto}"]`).click()));
     } catch (err) {
@@ -45,6 +51,31 @@
       busy = false;
       if (again !== null) { const r = again; again = null; render(r); }
     }
+  }
+
+  // one line on the closed settings group: which build, which step
+  async function settingsSummary(d) {
+    const el = $('#charSettingsSum'); if (!el) return;
+    const src = await window.api.pobSource().catch(() => null);
+    const v = window.__stepsView; const step = v && v.list && v.list.find((x) => x.current);
+    el.textContent = [
+      src ? (src.planner ? `Guide: ${src.title || src.name}` : src.name) : 'No build loaded',
+      step ? `step ${v.list.indexOf(step) + 1} of ${v.list.length}` : null,
+      d && d.on === false ? 'Path of Building off' : null,
+    ].filter(Boolean).join(' · ');
+  }
+  const cs0 = $('#charSettings'); if (cs0) cs0.querySelector('summary').addEventListener('click', () => { cs0.dataset.touched = '1'; });
+
+  // the gems you have: click one in the Skills list to mark it green (kept per character, all steps)
+  function bindGems(root) {
+    root.querySelectorAll('[data-gem]').forEach((g) => g.addEventListener('click', async () => {
+      const on = !g.classList.contains('have');
+      g.classList.toggle('have', on);
+      g.title = on ? 'You have it (click to unmark)' : 'Click if you have this gem';
+      await window.api.stepsGem(g.dataset.gem, { have: on });
+      const v = window.__stepsView; if (v) { const k = g.dataset.gem.toLowerCase(); v.haveGems = (v.haveGems || []).filter((x) => x !== k).concat(on ? [k] : []); }
+      const c = root.querySelector('#gemCount'); if (c) c.textContent = `${root.querySelectorAll('[data-gem].have').length} of ${root.querySelectorAll('[data-gem]').length} marked`;
+    }));
   }
 
   // the main skill picker: every active skill of the build and the weapon's default attack, with
@@ -182,9 +213,16 @@
     const seen = new Set();
     const groups = (s.skills || []).filter((g) => { const act = (g.gems || []).filter((x) => !x.support); const k = (act.length ? act : g.gems || []).map((x) => x.name).join('|'); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => (b.main ? 1 : 0) - (a.main ? 1 : 0));
-    const skills = groups.length ? card(`Skills (${groups.length})`, groups.map((g) => {
+    // every gem can be clicked green: "I have it" (kept per character); gems new in this guide step get a tag
+    const sv = window.__stepsView || {};
+    const haveSet = new Set(sv.haveGems || []); const newSet = new Set(sv.newGems || []);
+    const gem = (x, cls) => { const k = String(x.name).toLowerCase(); const h = haveSet.has(k);
+      return `<span class="gem-tag ${cls}${h ? ' have' : ''}" data-gem="${esc(x.name)}" role="button" tabindex="0" title="${h ? 'You have it (click to unmark)' : 'Click if you have this gem'}">${esc(x.name)}${newSet.has(k) ? '<span class="g-new">new</span>' : ''}</span>`; };
+    let gemTotal = 0; let gemHave = 0;
+    groups.forEach((g) => (g.gems || []).forEach((x) => { gemTotal++; if (haveSet.has(String(x.name).toLowerCase())) gemHave++; }));
+    const skills = groups.length ? card(`Skills (${groups.length})`, `<div class="dim small gem-help">Click a gem you have to mark it green · <span id="gemCount">${gemHave} of ${gemTotal} marked</span>${newSet.size ? ` · <span class="g-new">new</span> = new in this guide step` : ''}</div>` + groups.map((g) => {
       const act = g.gems.filter((x) => !x.support); const sup = g.gems.filter((x) => x.support);
-      return `<div class="skill-group ${g.main ? 'main' : ''} ${g.enabled ? '' : 'off'}"><div class="sk">${act.map((x) => `${esc(x.name)} <small class="dim">${x.level ? `lvl ${x.level}` : ''}${x.quality ? ` · ${x.quality}%` : ''}</small>`).join(' + ') || esc(g.label)}${g.main ? ' <span class="char-tag">main</span>' : ''}${g.default ? ' <small class="dim">weapon\'s default attack</small>' : ''}${g.enabled ? '' : ' <small class="dim">(disabled)</small>'}</div>${sup.length ? `<div class="gems">${sup.map((x) => `<span class="sup">${esc(x.name)}</span>`).join(' · ')}</div>` : ''}</div>`;
+      return `<div class="skill-group ${g.main ? 'main' : ''} ${g.enabled ? '' : 'off'}"><div class="sk">${act.map((x) => `${gem(x, 'act')} <small class="dim">${x.level ? `lvl ${x.level}` : ''}${x.quality ? ` · ${x.quality}%` : ''}</small>`).join(' + ') || esc(g.label)}${g.main ? ' <span class="char-tag">main</span>' : ''}${g.default ? ' <small class="dim">weapon\'s default attack</small>' : ''}${g.enabled ? '' : ' <small class="dim">(disabled)</small>'}</div>${sup.length ? `<div class="gems">${sup.map((x) => gem(x, 'sup')).join('')}</div>` : ''}</div>`;
     }).join('')) : '';
 
     const t = s.tree || {};
@@ -195,18 +233,41 @@
 
     const over = new Set(s.overridden || []);
     const gs = st.gearScores || {};
-    const gear = card('Gear', table(SLOT_ORDER.map((slot) => {
+    // each slot: your item, and with a guide step, how close it is to the step's (missing mods under it)
+    const stepCur = sv.list && sv.list.find((x) => x.current);
+    const matchOf = {}; ((sv.match && sv.match.slots) || []).forEach((x) => { matchOf[x.slot] = x; });
+    const lvl = (p) => (p >= 80 ? 'good' : p >= 50 ? 'mid' : 'low');
+    const gearRows = SLOT_ORDER.map((slot) => {
       const it = (st.equipped || {})[slot]; const pobName = (s.gear || {})[POB_SLOT[slot] || slot];
-      const name = it ? it.name : pobName; if (!name) return '';
+      const name = it ? it.name : pobName; const mt = matchOf[slot];
+      if (!name && !mt) return '';
       const g = gs[slot];
-      return row(slot, `${esc(name)}${over.has(POB_SLOT[slot] || slot) ? ' <small>copied in game</small>' : it && it.fromPob ? ' <small>from PoB</small>' : ''}${g && g.score != null ? ` <span class="gs g-${esc(g.grade)}">${g.score} ${esc(g.grade)}</span>` : ''}`);
-    })) + (s.sockets && s.sockets.length ? `<h4 class="small">Jewel sockets on your tree</h4>${table(s.sockets.map((j) => row(j.label, j.jewel ? esc(j.jewel) : '<span class="neg">empty</span>')))}` : '')
+      const tag = it && it.fromGuide ? ' <small class="gtag">guide item</small>' : over.has(POB_SLOT[slot] || slot) ? ' <small>copied in game</small>' : it && it.fromPob ? ' <small>from PoB</small>' : '';
+      let step = '';
+      if (mt) {
+        const m = mt.match; const t = mt.target;
+        const want = t.unique ? `<b class="unique-t">${esc(t.unique)}</b>` : esc(t.base || 'a rare');
+        const parts = [
+          m.missing.length && !t.unique ? `<span class="mk miss">missing</span> ${m.missing.map(esc).join(' · ')}` : '',
+          m.low.length ? `<span class="mk low">low roll</span> ${m.low.map((x) => `${esc(x.text)} (${x.pct}%)`).join(' · ')}` : '',
+        ].filter(Boolean);
+        step = `<div class="gm"><span class="mbar ${lvl(m.pct)}"><span data-w="${m.pct}"></span></span><b class="gm-p ${lvl(m.pct)}">${m.pct}%</b>
+          <span class="gm-t">${mt.fromPob ? 'your own not saved yet · ' : ''}step wants ${want}${t.unique ? '' : ` · ${m.have}/${m.of} mods`}</span></div>${parts.length ? `<div class="gm-miss">${parts.join('<br>')}</div>` : ''}`;
+      }
+      return `<div class="gear-row"><div class="gr-top"><span class="gr-slot">${esc(slot)}</span><span class="gr-item">${name ? esc(name) : '<span class="dim">nothing</span>'}${tag}</span>${g && g.score != null ? `<span class="gs g-${esc(g.grade)}">${g.score} ${esc(g.grade)}</span>` : ''}</div>${step}</div>`;
+    }).join('');
+    const gearTitle = stepCur && sv.match ? `Gear · ${sv.match.pct}% of ${stepCur.label}` : 'Gear';
+    const gear = card(gearTitle, (gearRows ? `<div class="gear-rows">${gearRows}</div>` : '') + (s.sockets && s.sockets.length ? `<h4 class="small">Jewel sockets on your tree</h4>${table(s.sockets.map((j) => row(j.label, j.jewel ? esc(j.jewel) : '<span class="neg">empty</span>')))}` : '')
       + '<div class="row"><button class="link" data-goto="gear">Change gear on My gear →</button></div>');
 
-    // three groups of related cards, each stacked without gaps: what you deal, what you survive,
-    // what you wear and how you're built
+    // the stats first, then the guide step bar, then two columns: what you wear and use (gear with the
+    // step's match, skills with your gems) and what it adds up to (offence, defence, the rest)
     const stack = (cls, title, parts) => { const inner = parts.filter(Boolean).join(''); return inner ? `<section class="char-stack ${cls}"><h4 class="char-group">${esc(title)}</h4>${inner}</section>` : ''; };
-    return `${hero}<div class="char-cols">${stack('s-off', 'Offence', [minionCard, offence, skills])}${stack('s-def', 'Defence', [defence, res, maxHit, st.game === 'poe1' ? bossCard() : '', resources])}${stack('s-build', 'Gear & build', [gear, anointCard(st.game), st.game === 'poe1' ? '' : runeCard(), misc || tree ? `<div class="char-sub">${misc}${tree}</div>` : '', '<div class="card-p" id="strBox"></div>'])}</div>`;
+    return `${hero}<div id="stepBar" class="stepbar-wrap"></div>
+      <div class="char-cols2">
+        <div class="char-col">${stack('s-build', 'Gear & skills', [gear, skills, tree])}${stack('s-more', 'Improve', [st.game === 'poe1' ? '' : runeCard(), anointCard(st.game), '<div class="card-p" id="strBox"></div>'])}</div>
+        <div class="char-col">${stack('s-off', 'Offence', [minionCard, offence])}${stack('s-def', 'Defence', [defence, res, maxHit, st.game === 'poe1' ? bossCard() : '', resources, misc])}</div>
+      </div>`;
   }
 
   // PoE1 boss check: Path of Building's boss skill presets, one at a time
@@ -367,7 +428,7 @@
     const res = rs ? card('Resistances (from My gear)', resBars(['fire', 'cold', 'lightning', 'chaos'].filter((el) => rs[el] != null).map((el) => ({ el: el[0].toUpperCase() + el.slice(1), value: Math.min(rs[el], (rs.caps && rs.caps[el]) || rs.cap || 75), total: rs[el], over: rs[el] - ((rs.caps && rs.caps[el]) || rs.cap || 75), max: (rs.caps && rs.caps[el]) || rs.cap || 75 })), false)) : '';
     const gs = st.gearScores || {};
     const gear = card('Gear', table(SLOT_ORDER.map((slot) => { const it = (st.equipped || {})[slot]; const g = gs[slot]; return it ? row(slot, `${esc(it.name)}${g && g.score != null ? ` <span class="gs g-${esc(g.grade)}">${g.score} ${esc(g.grade)}</span>` : ''}`) : ''; })));
-    return `<div class="card-p"><h3>Your character sheet</h3><div class="help">${why}</div></div><div class="grid g-cards">${res}${gear}<div class="card-p" id="strBox"></div></div>`;
+    return `<div class="card-p"><h3>Your character sheet</h3><div class="help">${why}</div></div><div id="stepBar" class="stepbar-wrap"></div><div class="grid g-cards">${res}${gear}<div class="card-p" id="strBox"></div></div>`;
   }
 
   document.querySelector('.tabs button[data-tab="char"]').addEventListener('click', () => render(false));

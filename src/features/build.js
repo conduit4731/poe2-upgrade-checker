@@ -280,7 +280,9 @@ module.exports = function (C) {
   function stepsView() {
     const s = stepsNow();
     const list = s.list.map((x, i) => ({ label: x.label, name: x.name, file: path.basename(x.path), passives: x.passives, gems: x.gems, items: x.items, current: i === s.current }));
-    const out = { ok: true, list, current: s.current, manual: s.manual, sortedOrder: stepsLib.autoOrder(s.list).map((x) => s.list.indexOf(x)) };
+    // the gems you've marked as yours (by name, as the skill list shows them), for every step
+    const haveGems = Object.entries(s.gems).filter(([, v]) => v && v.have).map(([k]) => k);
+    const out = { ok: true, list, current: s.current, manual: s.manual, haveGems, sortedOrder: stepsLib.autoOrder(s.list).map((x) => s.list.indexOf(x)) };
     if (s.current == null || !s.list[s.current]) return out;
     try {
       const b = readStep(s.list[s.current].path);
@@ -291,7 +293,8 @@ module.exports = function (C) {
       for (const [slot, it] of Object.entries(C.store.equipped || {})) if (it && !it.fromGuide) mine[slot] = it;
       const m = stepsLib.matchGear(stepsLib.stepGear(b), mine);
       out.match = { pct: m.pct, slots: m.slots.map((x) => ({ slot: x.slot, target: x.target, match: x.match, yours: (C.store.equipped[x.slot] || {}).name || null, fromPob: !!(C.store.equipped[x.slot] || {}).fromGuide })) };
-      out.gems = stepsLib.stepGems(b, prev).map((g) => ({ ...g, mine: s.gems[g.id] || null, supports: g.supports.map((sp) => ({ ...sp, mine: s.gems[sp.id] || null })) }));
+      // the step's gems, with the ones new since the step before (the Character page's skill list marks them)
+      out.newGems = stepsLib.stepGems(b, prev).flatMap((g) => [g, ...g.supports]).filter((g) => g.isNew).map((g) => g.name.toLowerCase());
       out.prevLabel = prev ? s.list[s.current - 1].label : null;
     } catch (err) { out.error = `Couldn't read ${path.basename(s.list[s.current].path)}: ${err.code === 'ENOENT' ? 'the file is gone' : err.message}`; }
     return out;
@@ -369,12 +372,13 @@ module.exports = function (C) {
     C.notifySettings('settings:changed');
     return { ...r, steps: stepsView() };
   });
-  // the gems you have (ticked) and their level, for the gem checklist: kept per character, across steps
-  ipcMain.handle('steps:gem', (_e, id, v) => {
-    if (typeof id !== 'string' || id.length > 120) return false;
+  // the gems you have: clicked green in the Character page's skill list, by gem name, kept per character
+  // across steps
+  ipcMain.handle('steps:gem', (_e, name, v) => {
+    if (typeof name !== 'string' || !name.trim() || name.length > 120) return false;
+    const id = name.trim().toLowerCase();
     const s = stepsNow();
-    const have = !!(v && v.have); const lv = v && Number(v.level) > 0 ? Math.min(40, Math.round(Number(v.level))) : null;
-    if (have || lv) s.gems[id] = { have, ...(lv ? { level: lv } : {}) }; else delete s.gems[id];
+    if (v && v.have) s.gems[id] = { have: true }; else delete s.gems[id];
     C.store.setBuildSteps(s);
     return true;
   });
