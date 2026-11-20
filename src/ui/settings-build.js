@@ -151,6 +151,8 @@ async function renderPob(load) {
   $('#pobBalance').value = Math.round((1 - (state.settings.pobDamageWeight == null ? 0.6 : state.settings.pobDamageWeight)) * 100);
   const st = await window.api.pobStatus(!!load);
   $('#pobControls').classList.toggle('hidden', !(st.available && st.hasBuild));
+  // a loaded build that's switched off: easy to miss, and every verdict and search is the rough gear score then
+  $('#pobOffNote').classList.toggle('hidden', !(st.available && st.hasBuild && !st.enabled));
   const p1s = state && state.game === 'poe1';
   if (!st.available) { el.innerHTML = `<div class="note">The Path of Building engine${p1s ? ' for PoE1' : ''} isn't included in this copy of the app – ${p1s ? "PoE1 items can't be judged without it. Reinstall the app or run test-build.bat again." : 'items are judged by the gear score instead.'}</div>`; return; }
   if (!st.hasBuild) { el.innerHTML = '<div class="note">No build yet: paste your PoB export above so items are judged by Path of Building.</div>'; return; }
@@ -215,7 +217,8 @@ function renderPriorities() {
   state.priorities = await window.api.setPriorities({ resFirst: $('#prRes').checked, chaos: $('#prChaos').checked, keepDmg: $('#prDmg').checked, spirit: $('#prSpirit').checked, attrs: $('#prAttrs').checked, speed: $('#prSpeed').checked });
   renderPriorities();
 }));
-$('#pobUse').addEventListener('change', async () => { await window.api.pobEnable($('#pobUse').checked); state = await window.api.getState(); renderPob(false); });
+$('#pobUse').addEventListener('change', async () => { await window.api.pobEnable($('#pobUse').checked); state = await window.api.getState(); renderPob(false); renderSlots(); });
+$('#pobTurnOn').addEventListener('click', async () => { $('#pobUse').checked = true; await window.api.pobEnable(true); state = await window.api.getState(); renderPob(false); renderSlots(); });
 $('#pobBalance').addEventListener('change', async () => { await window.api.setSetting('pobDamageWeight', 1 - Number($('#pobBalance').value) / 100); state = await window.api.getState(); });
 
 
