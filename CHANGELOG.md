@@ -2,6 +2,12 @@
 
 ## Unreleased (local fork)
 
+- **Guide steps (Character page).** Add all of a guide's step files (.build) at once: they're put in the guide's order (fewer passive points first), and you can rename and reorder them. Click a step to switch your build to it (tree, skills and the guide's gear; your stage and gem settings carry over). **Update loot filter** remakes your filter for the new step only when you ask.
+- **Gear match per step**, like Mobalytics: every slot against the step's item, by its mods (missing = 0, a lower roll counts less), with what's missing and which rolls are low, and an overall %. A slot that still holds the guide's own item counts as 0%. My gear shows each slot's match with the current step.
+- **Gem checklist per step:** the step's skills and supports, which are new since the step before, and boxes to tick what you have with its level (guide files have no gem levels, and the app can't see your gems).
+- **Build settings moved to the Character page** as a compact panel (build, stage, skills, Judge with Path of Building, damage or survivability). My gear warns when your build is loaded but Path of Building is switched off.
+- **Settings page** in sections under headers, with a section index, one row per setting.
+
 - **Readable on big screens.** The main and results windows now grow with their size (Settings → Popup → *Window text size*: Auto by default, or Normal to Huge). A maximised window on a 1440p screen draws at 1.45×. Text is bigger everywhere (nothing under 13.5 px, help at 15 px) and secondary text is brighter.
 - **A fuller look.** Panels get a header band like the games' own panels, the sidebar is grouped (Gear & trade, Character, Setup) with a clear current page, and controls are taller and easier to hit.
 - **My gear as an equipment grid:** one card per slot, its header tinted by the item's rarity as in game, the item's first mods in mod blue (+N more to see all), and Find upgrades / More at the bottom. Answers open inside the card. The gear score is a summary strip with the weakest slots as buttons.

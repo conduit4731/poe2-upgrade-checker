@@ -113,6 +113,14 @@ function renderGearSummary() {
   }));
 }
 
+// how close this slot's item is to the guide step you're on (Character page → Guide steps)
+function stepBadge(slot) {
+  const m = window.__stepMatch;
+  if (!m || m.slots[slot] == null) return '';
+  const p = m.slots[slot];
+  return ` <span class="sc-step ${p >= 80 ? 'good' : p >= 50 ? 'mid' : 'low'}" title="Matches ${p}% of the mods the ${esc(m.step)} step wants here (Character page, Guide steps)">${esc(m.step)} ${p}%</span>`;
+}
+
 // My gear's equipment as a list (one row per slot, the default) or a grid of cards; kept in this
 // window's storage, as it's only how you like to look at it
 function gearView() {
@@ -150,7 +158,7 @@ function renderSlots() {
       <div class="sc-head"><span class="sc-slot">${esc(s)}</span>${score}</div>
       <div class="sc-item">
         <div class="sc-name rar-${esc(rar)}">${esc(it.name)}</div>
-        <div class="sc-base">${esc(it.baseType !== it.name ? it.baseType : it.itemClass || '')}${it.fromPob ? ' <span class="sc-tag">from PoB</span>' : ''}</div>
+        <div class="sc-base">${esc(it.baseType !== it.name ? it.baseType : it.itemClass || '')}${it.fromPob ? ' <span class="sc-tag">from PoB</span>' : ''}${stepBadge(s)}</div>
         ${mods.length ? `<ul class="sc-mods">${mods.map((m, i) => `<li${i >= MODS ? ' class="more"' : ''}>${esc(m)}</li>`).join('')}</ul>${mods.length > MODS ? `<button class="link sc-allmods">+${mods.length - MODS} more</button>` : ''}` : ''}
       </div>
       <div class="sc-actions">${slotActions(s, it)}</div>

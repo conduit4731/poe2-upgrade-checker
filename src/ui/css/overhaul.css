@@ -244,6 +244,74 @@ label.set-row:hover .set-name { color: var(--gold-hi); }
 .build-panel details.fold:last-child > summary { margin-bottom: 0; }
 .build-panel #pobMsg:empty { display: none; }
 
+/* ---------- Character: guide steps ---------- */
+h3.steps-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.steps-actions { display: flex; align-items: center; gap: 14px; font-family: var(--f-text); }
+.steps-actions button:not(.link) { font-size: 14.5px; padding: 6px 12px 5px; }
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; counter-reset: none; }
+.stepper li { display: flex; min-width: 0; }
+.stepper .step { flex: 1; display: flex; align-items: center; gap: 11px; text-align: left; padding: 10px 12px; background: var(--raise); border: 1px solid var(--iron-hi); font-family: var(--f-text); min-width: 0; }
+.stepper .step:hover:not(:disabled) { border-color: var(--bronze); background: var(--hover); }
+.stepper .step.current { border-color: var(--gold); background: var(--hover); box-shadow: inset 0 -2px 0 var(--gold); }
+.st-n { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--iron-hi); font: 700 15px var(--f-carved); color: var(--bronze-text); }
+.step.current .st-n { border-color: var(--gold); color: var(--void); background: var(--gold); }
+.st-text { display: flex; flex-direction: column; min-width: 0; }
+.st-l { font: 700 16px/1.2 var(--f-carved); color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.step.current .st-l { color: var(--gold-hi); }
+.st-m { font-size: 13.5px; color: var(--ash); }
+.steps-note { margin: 12px 0 0; padding: 10px 14px; border: 1px solid var(--iron-hi); background: var(--band); font-size: 15px; line-height: 1.6; }
+.steps-note::after { content: ""; display: block; clear: both; }
+.steps-note button { float: right; margin: -3px 0 -3px 16px; }
+.steps-pick { margin-top: 12px; }
+.steps-edit .row { margin-top: 12px; }
+.steps-table td { vertical-align: middle; }
+.steps-table td.c { width: 36px; text-align: center; font: 700 15px var(--f-carved); color: var(--bronze-text); }
+.steps-table input.step-name { width: min(360px, 100%); }
+.steps-table button[data-up], .steps-table button[data-down] { padding: 4px 10px 3px; }
+.steps-detail { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--iron); }
+@media (min-width: 1300px) { .steps-detail { grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr); } }
+.match-head { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+.match-big { display: inline-block; min-width: 86px; text-align: center; font: 700 30px/1 var(--f-carved); padding: 10px 8px 8px; border: 1px solid var(--iron-hi); background: var(--raise); }
+.match-big.good { color: var(--up); } .match-big.mid { color: var(--warn); } .match-big.low { color: var(--down); }
+.mrows { border-top: 1px solid var(--iron); }
+.mrow-h, details.mrow > summary { display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr) 80px 150px; gap: 10px; align-items: center; }
+.mrow-h { padding: 6px 8px; font: 700 13.5px var(--f-carved); color: var(--bronze-text); border-bottom: 1px solid var(--iron); }
+details.mrow { border-bottom: 1px solid var(--iron-lo); }
+details.mrow > summary { list-style: none; cursor: pointer; padding: 8px; }
+details.mrow > summary::-webkit-details-marker { display: none; }
+details.mrow > summary:hover, details.mrow[open] > summary { background: var(--raise); }
+.m-slot { font: 700 14.5px var(--f-carved); color: var(--bronze-text); }
+.m-want, .m-yours { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.m-want b { font-weight: 600; }
+.m-want .unique-t { color: var(--unique-text); }
+.m-count { font-size: 13.5px; text-align: right; }
+.m-pct { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.m-pct b { min-width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+.m-detail { padding: 4px 8px 12px 128px; font-size: 14.5px; display: grid; gap: 4px; }
+.mk { display: inline-block; font: 700 12.5px var(--f-carved); padding: 1px 6px; margin-right: 6px; border: 1px solid currentColor; }
+.mk.miss { color: var(--down); } .mk.low { color: var(--warn); }
+.mbar { display: inline-block; width: 90px; height: 8px; background: var(--void); border: 1px solid var(--iron-hi); position: relative; }
+.mbar > span { position: absolute; left: 0; top: 0; bottom: 0; }
+.mbar.good > span { background: var(--up); } .mbar.mid > span { background: var(--warn); } .mbar.low > span { background: var(--down); }
+.gems-head { margin-bottom: 4px; }
+.gem-list { margin-top: 10px; display: grid; gap: 8px; }
+.gem-group { border: 1px solid var(--iron-lo); background: var(--raise); padding: 4px 8px; }
+label.gem { display: grid; grid-template-columns: 20px minmax(0, 1fr) 64px 34px; gap: 8px; align-items: center; padding: 4px 0; cursor: pointer; font-size: 15px; }
+label.gem.sup { padding-left: 22px; grid-template-columns: 20px minmax(0, 1fr) 64px 34px; font-size: 14.5px; color: var(--stone); }
+label.gem:not(.sup) .g-name { color: var(--bone); font-weight: 600; }
+label.gem.have .g-name { color: var(--up); }
+label.gem input.g-lv { width: 64px; padding: 3px 6px; font-size: 14px; }
+.g-max { white-space: nowrap; }
+.g-new { font: 700 12px var(--f-carved); color: var(--gold-hi); border: 1px solid var(--bronze); padding: 0 5px; margin-left: 4px; }
+.sc-step { display: inline-block; font-size: 12.5px; line-height: 1.3; padding: 0 6px; margin-left: 6px; border: 1px solid currentColor; vertical-align: 1px; white-space: nowrap; }
+.sc-step.good { color: var(--up); } .sc-step.mid { color: var(--warn); } .sc-step.low { color: var(--down); }
+@media (max-width: 1000px) {
+  .mrow-h { display: none; }
+  details.mrow > summary { grid-template-columns: 90px minmax(0, 1fr) 120px; }
+  .m-yours, .m-count { display: none; }
+  .m-detail { padding-left: 8px; }
+}
+
 /* small windows: the sidebar is a top bar, no group labels */
 @media (max-width: 820px) {
   body.app { grid-template-columns: 1fr; }

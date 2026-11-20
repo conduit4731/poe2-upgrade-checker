@@ -214,6 +214,16 @@ class Store {
     this.save();
   }
 
+  // a guide in steps (several .build files from one guide): { list: [{ path, label, name, passives, gems,
+  // items }], current: index | null, manual: true once you've reordered them, gems: { gemId: { have, level } } }
+  buildSteps() { const p = this.profileOf(this.data.activeProfile); return (p && p.buildSteps) || null; }
+  setBuildSteps(v) {
+    const p = this.profileOf(this.data.activeProfile);
+    if (!p) return;
+    if (v && Array.isArray(v.list) && (v.list.length || (v.gems && Object.keys(v.gems).length))) p.buildSteps = v; else delete p.buildSteps;
+    this.save();
+  }
+
   switchProfile(id) {
     if (!this.profileOf(id) || id === this.data.activeProfile) return false;
     const cur = this.data.profiles[this.data.activeProfile];

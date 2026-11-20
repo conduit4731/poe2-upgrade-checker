@@ -264,6 +264,121 @@ module.exports = function (C) {
     return r;
   });
 
+  // ---------- a guide in steps ----------
+  // Several .build files from one guide ("Early", "Midgame", "Endgame"...). They're kept in the guide's
+  // order (put there by how far along each is, or by you), you switch the build to any of them, and the
+  // Character page shows how close your gear is to the step's and which gems it uses.
+  const stepsLib = require('../core/buildsteps');
+  const MAX_STEPS = 12;
+  const stepsNow = () => { const s = C.store.buildSteps(); return s ? { list: s.list || [], current: s.current == null ? null : s.current, manual: !!s.manual, gems: s.gems || {} } : { list: [], current: null, manual: false, gems: {} }; };
+  function readStep(file) {
+    const text = readBuildFile(file);
+    if (!planner.isBuildFile(text)) throw new Error(`${path.basename(file)} isn't a guide's .build file.`);
+    return planner.parse(text);
+  }
+  // the step you're on: its gear against yours, and its gems (new ones against the step before)
+  function stepsView() {
+    const s = stepsNow();
+    const list = s.list.map((x, i) => ({ label: x.label, name: x.name, file: path.basename(x.path), passives: x.passives, gems: x.gems, items: x.items, current: i === s.current }));
+    const out = { ok: true, list, current: s.current, manual: s.manual, sortedOrder: stepsLib.autoOrder(s.list).map((x) => s.list.indexOf(x)) };
+    if (s.current == null || !s.list[s.current]) return out;
+    try {
+      const b = readStep(s.list[s.current].path);
+      let prev = null;
+      if (s.current > 0 && s.list[s.current - 1]) { try { prev = readStep(s.list[s.current - 1].path); } catch (_) { prev = null; } }
+      // a guide's own item (put in a slot you haven't saved yours in) isn't yours: it doesn't count
+      const mine = {};
+      for (const [slot, it] of Object.entries(C.store.equipped || {})) if (it && !it.fromGuide) mine[slot] = it;
+      const m = stepsLib.matchGear(stepsLib.stepGear(b), mine);
+      out.match = { pct: m.pct, slots: m.slots.map((x) => ({ slot: x.slot, target: x.target, match: x.match, yours: (C.store.equipped[x.slot] || {}).name || null, fromPob: !!(C.store.equipped[x.slot] || {}).fromGuide })) };
+      out.gems = stepsLib.stepGems(b, prev).map((g) => ({ ...g, mine: s.gems[g.id] || null, supports: g.supports.map((sp) => ({ ...sp, mine: s.gems[sp.id] || null })) }));
+      out.prevLabel = prev ? s.list[s.current - 1].label : null;
+    } catch (err) { out.error = `Couldn't read ${path.basename(s.list[s.current].path)}: ${err.code === 'ENOENT' ? 'the file is gone' : err.message}`; }
+    return out;
+  }
+  ipcMain.handle('steps:get', () => stepsView());
+  ipcMain.handle('steps:add', async () => {
+    const { dialog } = require('electron');
+    const s = stepsNow();
+    const last = s.list.length ? path.dirname(s.list[s.list.length - 1].path) : null;
+    const planner2 = path.join(app.getPath('documents'), 'My Games', 'Path of Exile 2', 'BuildPlanner');
+    const start = last && fs.existsSync(last) ? last : fs.existsSync(planner2) ? planner2 : app.getPath('documents');
+    const pick = await dialog.showOpenDialog(C.settingsWin && !C.settingsWin.isDestroyed() ? C.settingsWin : undefined, {
+      title: 'Pick the guide\'s step files (.build) - you can pick several at once', defaultPath: start,
+      filters: [{ name: 'Build Planner files', extensions: ['build'] }], properties: ['openFile', 'multiSelections'],
+    });
+    if (pick.canceled || !pick.filePaths.length) return { ...stepsView(), canceled: true };
+    const errors = []; let added = 0;
+    for (const file of pick.filePaths) {
+      if (s.list.some((x) => path.resolve(x.path) === path.resolve(file))) continue;
+      if (s.list.length >= MAX_STEPS) { errors.push(`only ${MAX_STEPS} steps fit`); break; }
+      try { const b = readStep(file); s.list.push({ path: file, ...stepsLib.stepInfo(b) }); added++; } catch (err) { errors.push(err.message); }
+    }
+    // in the guide's order, unless you've put them in your own
+    const cur = s.current == null ? null : s.list[s.current];
+    if (!s.manual) s.list = stepsLib.autoOrder(s.list);
+    s.current = cur ? s.list.indexOf(cur) : null;
+    C.store.setBuildSteps(s);
+    return { ...stepsView(), added, errors };
+  });
+  ipcMain.handle('steps:move', (_e, from, to) => {
+    const s = stepsNow(); const f = Number(from); const t = Number(to);
+    if (!(f >= 0 && f < s.list.length && t >= 0 && t < s.list.length) || f === t) return stepsView();
+    const cur = s.current == null ? null : s.list[s.current];
+    const [x] = s.list.splice(f, 1); s.list.splice(t, 0, x);
+    s.current = cur ? s.list.indexOf(cur) : null; s.manual = true;
+    C.store.setBuildSteps(s);
+    return stepsView();
+  });
+  ipcMain.handle('steps:sort', () => {
+    const s = stepsNow(); const cur = s.current == null ? null : s.list[s.current];
+    s.list = stepsLib.autoOrder(s.list); s.current = cur ? s.list.indexOf(cur) : null; s.manual = false;
+    C.store.setBuildSteps(s);
+    return stepsView();
+  });
+  ipcMain.handle('steps:remove', (_e, i) => {
+    const s = stepsNow(); const n = Number(i);
+    if (!(n >= 0 && n < s.list.length)) return stepsView();
+    const cur = s.current == null ? null : s.list[s.current];
+    s.list.splice(n, 1); s.current = cur && s.list.includes(cur) ? s.list.indexOf(cur) : null;
+    C.store.setBuildSteps(s);
+    return stepsView();
+  });
+  ipcMain.handle('steps:rename', (_e, i, label) => {
+    const s = stepsNow(); const n = Number(i);
+    if (!(n >= 0 && n < s.list.length)) return stepsView();
+    const l = String(label || '').trim().slice(0, 60);
+    s.list[n].label = l || stepsLib.shortName(s.list[n].name);
+    C.store.setBuildSteps(s);
+    return stepsView();
+  });
+  // switch the build to a step: the step's file is linked like "link a build file" (your stage choice
+  // and gem settings carry over), so the tree, skills and the guide's gear are the step's from now on
+  ipcMain.handle('steps:select', async (_e, i) => {
+    const s = stepsNow(); const n = Number(i);
+    if (!(n >= 0 && n < s.list.length)) return { ok: false, error: 'No such step.' };
+    const file = s.list[n].path;
+    let xml;
+    try { xml = readBuildFile(file); } catch (err) { return { ok: false, error: `Couldn't read ${path.basename(file)}: ${err.code === 'ENOENT' ? 'the file is gone' : err.message}` }; }
+    const prev = C.store.buildSource() || {};
+    const source = { type: 'file', path: file, ...(prev.planner && prev.stage != null ? { stage: prev.stage } : {}), ...(prev.planner && prev.skills ? { skills: prev.skills } : {}) };
+    const r = await importBuild(xml, { source });
+    if (!r.ok) return r;
+    const cur = C.store.buildSource(); if (cur) C.store.setBuildSource({ ...cur, sum: require('crypto').createHash('sha1').update(xml).digest('hex') });
+    const s2 = stepsNow(); s2.current = n; C.store.setBuildSteps(s2);
+    C.notifySettings('settings:changed');
+    return { ...r, steps: stepsView() };
+  });
+  // the gems you have (ticked) and their level, for the gem checklist: kept per character, across steps
+  ipcMain.handle('steps:gem', (_e, id, v) => {
+    if (typeof id !== 'string' || id.length > 120) return false;
+    const s = stepsNow();
+    const have = !!(v && v.have); const lv = v && Number(v.level) > 0 ? Math.min(40, Math.round(Number(v.level))) : null;
+    if (have || lv) s.gems[id] = { have, ...(lv ? { level: lv } : {}) }; else delete s.gems[id];
+    C.store.setBuildSteps(s);
+    return true;
+  });
+
   // PoE1: a PoB export doesn't say what kind of weapon an item is; PoB itself knows
   const POE1_WEAPON_CLASS = {
     'Two Handed Axe': 'Two Hand Axes', 'Two Handed Mace': 'Two Hand Maces', 'Two Handed Sword': 'Two Hand Swords',
