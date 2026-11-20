@@ -80,8 +80,22 @@ module.exports = function (C) {
     });
     return { hits };
   }
+  // a gem you copied in game (F2) is one you have: marked green in the Character page's skill list,
+  // with its level (kept per character, by name, like a click there)
+  function rememberGem(item) {
+    const name = String(item.name || item.baseType || '').trim();
+    if (!name || name.length > 120) return false;
+    const ex = C.ninjaLib.extras(item) || {};
+    const s = C.store.buildSteps() || { list: [], current: null, gems: {} };
+    const gems = { ...(s.gems || {}) };
+    gems[name.toLowerCase()] = { have: true, ...(Number(ex.level) > 0 ? { level: Math.round(Number(ex.level)) } : {}), ...(Number(ex.quality) > 0 ? { quality: Math.round(Number(ex.quality)) } : {}), at: Date.now() };
+    C.store.setBuildSteps({ ...s, list: s.list || [], gems });
+    C.notifySettings('settings:changed');
+    return true;
+  }
   function showPriceCard(item) {
     const r = { ok: true, kind: 'price', item, pricePending: true, links: C.ninjaLib.infoLinks(item, C.tg()) };
+    if (isGem(item)) { try { if (rememberGem(item)) C.log(`gem: ${item.name || item.baseType} marked as yours`); } catch (err) { C.log('gem remember: ' + err.message); } }
     if (isGem(item) && C.pobOn()) r.gemPending = true;
     C.showResult(r);
     const seq = C.popupSeq;

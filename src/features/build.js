@@ -282,7 +282,9 @@ module.exports = function (C) {
     const list = s.list.map((x, i) => ({ label: x.label, name: x.name, file: path.basename(x.path), passives: x.passives, gems: x.gems, items: x.items, current: i === s.current }));
     // the gems you've marked as yours (by name, as the skill list shows them), for every step
     const haveGems = Object.entries(s.gems).filter(([, v]) => v && v.have).map(([k]) => k);
-    const out = { ok: true, list, current: s.current, manual: s.manual, haveGems, sortedOrder: stepsLib.autoOrder(s.list).map((x) => s.list.indexOf(x)) };
+    // the level of each gem you copied in game (F2), to show next to the build's
+    const gemLevels = Object.fromEntries(Object.entries(s.gems).filter(([, v]) => v && v.have && v.level).map(([k, v]) => [k, v.level]));
+    const out = { ok: true, list, current: s.current, manual: s.manual, haveGems, gemLevels, sortedOrder: stepsLib.autoOrder(s.list).map((x) => s.list.indexOf(x)) };
     if (s.current == null || !s.list[s.current]) return out;
     try {
       const b = readStep(s.list[s.current].path);

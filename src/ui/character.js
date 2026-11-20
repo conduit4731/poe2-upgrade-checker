@@ -215,12 +215,14 @@
       .sort((a, b) => (b.main ? 1 : 0) - (a.main ? 1 : 0));
     // every gem can be clicked green: "I have it" (kept per character); gems new in this guide step get a tag
     const sv = window.__stepsView || {};
-    const haveSet = new Set(sv.haveGems || []); const newSet = new Set(sv.newGems || []);
-    const gem = (x, cls) => { const k = String(x.name).toLowerCase(); const h = haveSet.has(k);
-      return `<span class="gem-tag ${cls}${h ? ' have' : ''}" data-gem="${esc(x.name)}" role="button" tabindex="0" title="${h ? 'You have it (click to unmark)' : 'Click if you have this gem'}">${esc(x.name)}${newSet.has(k) ? '<span class="g-new">new</span>' : ''}</span>`; };
+    const haveSet = new Set(sv.haveGems || []); const newSet = new Set(sv.newGems || []); const lvOf = sv.gemLevels || {};
+    // yours: green, with your level when you copied it in game (lower than the build's: in orange)
+    const gem = (x, cls) => { const k = String(x.name).toLowerCase(); const h = haveSet.has(k); const mine = lvOf[k];
+      const low = mine && x.level && mine < x.level;
+      return `<span class="gem-tag ${cls}${h ? ' have' : ''}" data-gem="${esc(x.name)}" role="button" tabindex="0" title="${h ? `You have it${mine ? `, level ${mine}` : ''} (click to unmark)` : 'Click if you have this gem, or press F2 on it in game'}">${esc(x.name)}${mine ? ` <span class="g-lv${low ? ' low' : ''}">${mine}</span>` : ''}${newSet.has(k) ? '<span class="g-new">new</span>' : ''}</span>`; };
     let gemTotal = 0; let gemHave = 0;
     groups.forEach((g) => (g.gems || []).forEach((x) => { gemTotal++; if (haveSet.has(String(x.name).toLowerCase())) gemHave++; }));
-    const skills = groups.length ? card(`Skills (${groups.length})`, `<div class="dim small gem-help">Click a gem you have to mark it green · <span id="gemCount">${gemHave} of ${gemTotal} marked</span>${newSet.size ? ` · <span class="g-new">new</span> = new in this guide step` : ''}</div>` + groups.map((g) => {
+    const skills = groups.length ? card(`Skills (${groups.length})`, `<div class="dim small gem-help">Your gems turn green: press <b>F2</b> on a gem in game (its level is kept too), or click it here · <span id="gemCount">${gemHave} of ${gemTotal} marked</span>${newSet.size ? ` · <span class="g-new">new</span> = new in this guide step` : ''}</div>` + groups.map((g) => {
       const act = g.gems.filter((x) => !x.support); const sup = g.gems.filter((x) => x.support);
       return `<div class="skill-group ${g.main ? 'main' : ''} ${g.enabled ? '' : 'off'}"><div class="sk">${act.map((x) => `${gem(x, 'act')} <small class="dim">${x.level ? `lvl ${x.level}` : ''}${x.quality ? ` · ${x.quality}%` : ''}</small>`).join(' + ') || esc(g.label)}${g.main ? ' <span class="char-tag">main</span>' : ''}${g.default ? ' <small class="dim">weapon\'s default attack</small>' : ''}${g.enabled ? '' : ' <small class="dim">(disabled)</small>'}</div>${sup.length ? `<div class="gems">${sup.map((x) => gem(x, 'sup')).join('')}</div>` : ''}</div>`;
     }).join('')) : '';
