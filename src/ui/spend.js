@@ -17,8 +17,13 @@
     if (run.unit === 'chaos') return b && b.priceEx ? Math.ceil(b.priceEx) : 50;
     return b && b.priceDiv ? Math.max(0.1, Math.ceil(b.priceDiv * 10) / 10) : 1;
   }
+  // the "How to read this page" box: open until there are results, then folded (unless you opened it)
+  let howTouched = false;
+  const how = $('#spendHow');
+  if (how) how.querySelector('summary').addEventListener('click', () => { howTouched = true; });
   function render(run, msg) {
     shown = run || shown;
+    if (how && !howTouched) how.open = !(run && run.rows && run.rows.length);
     if (!run) { if (msg) body().innerHTML = `<div class="card-p note">${esc(msg)}</div>`; return; }
     const rows = run.rows || [];
     const gs = run.mode === 'gear'; // without Path of Building: gear score points instead of % for your build
@@ -50,12 +55,17 @@
       body().querySelector('#spendAgain').addEventListener('click', () => go(true));
       return;
     }
+    const tile = (r, i) => `<div class="spend-tile${i === 0 ? ' first' : ''}"><span class="st-rank">${i === 0 ? 'Spend here first' : i === 1 ? 'Then' : 'After that'}</span>
+        <span class="st-slot">${esc(r.slot)}</span>
+        <span class="st-gain"><b class="pos">${gain(r.best.gain)}</b> for <b>${esc(r.best.price)}</b></span>
+        ${r.best.perDiv != null ? `<span class="st-per">${per(r.best.perDiv)} per divine</span>` : ''}
+        <span class="st-name dim small">${esc(r.best.name)}</span></div>`;
     const headline = run.partial ? '' : top
-      ? `<div class="card-p spend-top"><h3>Best value: ${esc(top.slot)}</h3>
-          <p><b>${esc(top.best.name)}</b> for ${esc(top.best.price)}: <b class="pos">${gain(top.best.gain)}</b> for your build${top.best.perDiv != null ? ` · <b>${per(top.best.perDiv)} per divine</b>` : ''}.</p>
-          ${withBest[1] ? `<p class="dim">Next: ${esc(withBest[1].slot)} (${gain(withBest[1].best.gain)} for ${esc(withBest[1].best.price)})${withBest[2] ? `, then ${esc(withBest[2].slot)} (${gain(withBest[2].best.gain)} for ${esc(withBest[2].best.price)})` : ''}.</p>` : ''}
+      ? `<div class="card-p spend-top"><h3>Best value for your money</h3>
+          <div class="spend-tiles">${withBest.slice(0, 3).map(tile).join('')}</div>
+          <p class="dim small">Ranked by improvement per divine. A cheap small upgrade can beat an expensive big one here; the table below also shows each slot's biggest gain.</p>
         </div>`
-      : '<div class="card-p note">Nothing in your price range is an upgrade for your build. Try a higher maximum on Find upgrades.</div>';
+      : '<div class="card-p note">Nothing in your price range is an upgrade for your build. Try a higher maximum price in Trade search settings on My gear.</div>';
     // a listing's name opens it in the results window (first, then the rest of that slot's search)
     const pickLink = (r, c, bold) => (c.listingId && r.searched ? `<button class="link spend-pick${bold ? ' b' : ''}" data-slot="${esc(r.slot)}" data-id="${esc(c.listingId)}" title="Show this listing (the trade site's own search, this one first)">${esc(c.name)}</button>` : bold ? `<b>${esc(c.name)}</b>` : esc(c.name));
     const row = (r) => {
@@ -81,7 +91,7 @@
     const old = !run.partial && ageH >= 0.5;
     const reused = run.reused || old ? `<div class="card-p ${ageH >= 6 ? 'note' : 'dim'}">From the search ${ageH >= 20 ? 'on' : 'at'} ${esc(when)}${ageH >= 6 ? ': prices and listings will have changed since' : run.reused ? ' (kept for 30 minutes)' : ''}${changed.size ? `, and you've changed your ${esc([...changed].join(', '))} since` : ''}. <button class="link" id="spendAgain">Search again now</button></div>` : '';
     body().innerHTML = `${msg ? `<div class="card-p note">${esc(msg)}</div>` : ''}${reused}${headline}
-      <div class="card-p"><h3>Every slot</h3><table class="kv spend"><tr><th>Slot</th><th>Best value in your price range</th><th>Per divine</th><th></th></tr>${rows.map(row).join('')}</table>
+      <div class="card-p"><h3>Every slot</h3><table class="kv spend"><tr><th>Slot <span class="th-sub">you wear now</span></th><th>Best value listing <span class="th-sub">gain for your build · price</span></th><th>Per divine <span class="th-sub">higher = better value</span></th><th></th></tr>${rows.map(row).join('')}</table>
       <p class="dim small">${esc(run.league || '')}${run.budget ? ` · ${esc(run.budget)}` : ''}${when ? ` · checked at ${esc(when)}` : ''} · ${gs ? 'Gear score points gained over what you wear (no Path of Building build loaded, so no resistance pairs)' : '"pts" is Path of Building\'s score for your build, as in the popup: the % change to your damage and effective HP, plus half a point per resistance point toward your cap'}, checked on the first 10 listings of each search.${run.stopped ? ` Stopped early: ${esc(run.stopped)}` : ''}</p></div>
       ${pairHtml}`;
     body().querySelectorAll('.spend-open').forEach((b) => b.addEventListener('click', async () => { b.disabled = true; await window.api.spendOpen(b.dataset.slot); b.disabled = false; }));

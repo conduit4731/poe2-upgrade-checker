@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (local fork)
+
+- **My gear is where you search.** Trade search settings (price, rate, sellers, league, level, corrupted, ignored stats) moved to the top of My gear. Each slot has **Find upgrades** (weighted by your build) and a **More** menu: same stats or better, craftable bases, best uniques, what's it worth, Custom search. Results show under that slot.
+- **Find upgrades page renamed Custom search**, and it only does custom searches now. A notice says it isn't weighted by your build or guide, a line shows which trade settings it uses, and "Start from" groups your gear and copied items.
+- **Calmer right column on My gear:** short help with the details folded away, the build's numbers in a grid with resistance chips, several PoB warnings folded into one line, priorities as an aligned list, resistances in a grid.
+- **Where to spend explains itself:** a "How to read this page" box (what it does, what pts and per divine mean, each part of the page), the top three picks as tiles, and column headers that say what they show.
+- Runs from source with the installed app's data folder (`Start fork.bat`).
+
 ## 0.5.8 - 2026-11-20
 - **The built-in Ctrl+C helper is used now.** 0.5.7 shipped `poekeys.exe` but looked for it in the wrong folder, so it still started PowerShell as before (everything worked, just the old way).
 

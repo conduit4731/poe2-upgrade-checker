@@ -32,8 +32,8 @@
     <nav class="tabs side-nav" aria-label="Pages">
       <button data-tab="gear" class="active" aria-current="page"><i data-icon="sword"></i>My gear</button>
       <button data-tab="char"><i data-icon="user"></i>Character</button>
-      <button data-tab="find"><i data-icon="search"></i>Find upgrades</button>
       <button data-tab="spend"><i data-icon="coins"></i>Where to spend</button>
+      <button data-tab="find"><i data-icon="search"></i>Custom search</button>
       <button data-tab="route"><i data-icon="flag"></i>League start</button>
       <button data-tab="build"><i data-icon="sliders"></i>Build &amp; stats</button>
       <button data-tab="test"><i data-icon="clipboard"></i>Check an item</button>
@@ -49,70 +49,133 @@
     <div class="whatsnew-bar hidden" id="whatsNewBar"></div>
     <section class="tab active" id="tab-gear">
       <header class="page-head">
-        <div><h2>My gear</h2><div class="sub"><span class="p2">What you're wearing, scored for your build (<button class="link gs-help">what's the gear score?</button>).</span><span class="p1">What you're wearing. Items are judged by Path of Building with your build (<button class="link gs-help">how?</button>).</span> Click a slot's <b>Find upgrades</b> to search for something better.</div></div>
+        <div><h2>My gear</h2><div class="sub">What you're wearing. <b>Find upgrades</b> on a slot searches the trade site for items that are better <b>for your build</b>.</div></div>
         <div class="page-actions">
           <button id="wizardBtn">Setup guide</button>
         </div>
       </header>
       <div class="grid g-2">
         <div class="col">
+          <div class="card-p" id="searchCard">
+            <div class="ss-head"><h3>Trade search settings</h3><span class="dim small">Used by every search: Find upgrades, Where to spend, Custom search and alerts.</span></div>
+            <div class="ss-grid">
+              <span class="ss-label">Price</span>
+              <span class="ss-field">
+                <input type="number" id="budgetMin" class="num" min="0" step="0.5" placeholder="from" aria-label="Lowest price">
+                <span class="dim">to</span>
+                <input type="number" id="budgetMax" class="num" min="0" step="0.5" placeholder="to" aria-label="Highest price">
+                <select id="budgetCurrency" aria-label="Currency">
+                  <option value="divine">Divine Orbs</option>
+                  <option value="exalted">Exalted Orbs</option>
+                  <option value="chaos">Chaos Orbs</option>
+                </select>
+                <button id="budgetClear" class="link">any price</button>
+              </span>
+              <span class="ss-label" id="rateLabel">Rate</span>
+              <span class="ss-field" id="rateWrap">
+                1 Divine = <input type="number" id="divineRate" class="num" min="0" placeholder="?" aria-label="Divine Orb rate"> <span id="rateUnit">Exalted</span>
+                <label><input type="checkbox" id="autoRate" checked> auto from poe.ninja</label>
+                <button id="rateRefresh" title="Get the latest rate now" class="link">refresh</button>
+              </span>
+              <span class="ss-label">Sellers</span>
+              <span class="ss-field">
+                <select id="findStatus" aria-label="Sellers">
+                  <option value="available">Instant Buyout + In Person</option>
+                  <option value="securable">Instant Buyout only</option>
+                  <option value="online">In Person (online) only</option>
+                  <option value="any">Any (incl. offline)</option>
+                </select>
+              </span>
+              <span class="ss-label">League</span>
+              <span class="ss-field">
+                <select id="findLeague" aria-label="League"></select>
+                <button id="tradeRefresh" title="Reload leagues and stat list from the trade site" aria-label="Reload leagues"><i data-icon="refresh"></i></button>
+              </span>
+              <span class="ss-label">Filters</span>
+              <span class="ss-field">
+                <label title="Levelling: every upgrade search only finds items you can wear at this level"><input type="checkbox" id="levelOn"> Only items I can wear at level</label>
+                <input type="number" id="levelCap" class="num" min="1" max="100" step="1" aria-label="Character level">
+                <button id="levelFromPob" class="link hidden" title="Use the level of your Path of Building character">use my level</button>
+                <label title="Every upgrade search leaves out corrupted items"><input type="checkbox" id="noCorrupted"> Skip corrupted</label>
+              </span>
+            </div>
+            <div class="ss-foot"><span class="help" id="budgetHelp"></span> <span class="help" id="rateStatus"></span></div>
+            <div class="note" id="findMsg"></div>
+            <details class="fold" id="ignoreFold"><summary>Ignored stats <span class="dim small fold-why-always" id="ignoreCount"></span></summary>
+              <div class="help">Stats you don't care about. <b>Ignore</b> leaves them out of scores and every search. <b>Exclude</b> also hides listings that have them.</div>
+              <table class="list" id="ignoreList"></table>
+              <div class="row">
+                <input id="ignoreAdd" list="ignoreStatsList" placeholder="Ignore another stat, e.g. # to maximum Mana" class="grow">
+                <button id="ignoreAddBtn">Add</button>
+                <button id="ignoreBrowse">Browse stats…</button>
+                <datalist id="ignoreStatsList"></datalist>
+              </div>
+            </details>
+          </div>
           <div class="card-p">
           <div id="setupBox" class="setup"></div>
           <div id="gearSummary" class="gear-summary"></div>
           <table class="list" id="slots"></table>
+          <div class="help slot-legend"><b>Find upgrades</b>: weighted by your build (Path of Building), every listing checked in your build. <b>More</b>: same stats or better, craftable bases, best uniques, price check, or a Custom search started from that item.</div>
           </div>
         </div>
         <div class="col side-col">
-          <div class="card-p">
-            <h3>Your build in Path of Building</h3>
-          <div class="help">Paste your Path of Building export code (Import/Export Build → Generate: <b>Path of Building 2</b> for PoE2, <b>Path of Building Community</b> for PoE1) or a <b>pobb.in</b> link. Following a guide without a PoB link? Link its Build Planner file (<b>.build</b>) below. The app then judges every item with <b>Path of Building's own calculations</b>: what it does to your damage (or your minions'), effective HP, resistances and <span class="p2">Spirit</span><span class="p1">mana and life reservation</span>. Make sure PoB's gear, tree, skills and Configuration match how you really play. Items you copy in game (F2) replace PoB's, so it always uses what you're wearing.</div>
-          <div class="row">
-            <input id="pobInput" class="grow" placeholder="https://pobb.in/abc123  or  eNrtXd…">
-            <button id="pobImport" class="primary">Import</button>
-          </div>
-          <div class="row"><button id="pobLinkFile" class="link" title="Pick the build file Path of Building saves (Documents\Path of Building\Builds), or a guide's .build file (Documents\My Games\Path of Exile 2\BuildPlanner). The app reads it again whenever it changes.">Or link a build file (PoB, or a guide's .build)…</button></div>
-          <div class="dim small" id="pobSource"></div>
-          <div class="note" id="pobMsg"></div>
-          <div id="pobStatus" class="pob-status"></div>
-          <div class="row" id="pobControls">
-            <label><input type="checkbox" id="pobUse"> Judge items with Path of Building</label>
-            <label title="How much damage counts against survivability when the app weighs an item">Damage <input type="range" id="pobBalance" min="0" max="100" step="10"> Survivability</label>
-          </div>
-          </div>
-          <div class="card-p" id="filterCard">
-            <h3>Loot filter for this build</h3>
-            <div class="help">Highlights drops worth a look: the uniques your guide uses that you don't have yet, the best runes for your sockets (after a check on the Character page), better bases of the kinds you wear, your own bases, and identified magic and rare items with the mods your build values most (weapons and offhands too). While levelling, bases show from your level. Pick your current filter and the app saves a copy with this section in front (your filter itself isn't changed). Then choose the new file in the game's options.</div>
-            <div class="row"><button id="filterMake">Make loot filter…</button><button id="filterEdit" title="Change how items look in any of your filters, in game: hide, show, tiers, colours, sounds, beams. Online filters are edited as a local copy.">Edit a filter…</button><button id="filterRemake" class="hidden" title="Write the same file again from your gear and build now, with your filter read again">Remake</button></div>
-            <div class="small" id="filterStatus"></div>
-            <div class="note" id="filterMsg"></div>
-          </div>
-          <div class="card-p">
-            <h3>Priorities</h3>
-          <div class="row prio">
-            <label title="While a resistance is under the cap, items that fill it score much higher and Find upgrades looks for it first"><input type="checkbox" id="prRes"> Cap my resistances first</label>
-            <label title="Count chaos resistance as one to cap too"><input type="checkbox" id="prChaos"> including chaos</label>
-            <label title="An item that costs more than 5% of your damage (e.g. it doesn't have your minion damage mods) is LOSES DAMAGE, however much resistance or life it adds"><input type="checkbox" id="prDmg"> Never lose damage <span class="dim small">(needs PoB)</span></label>
-            <label title="An item that leaves you without enough Spirit for your minions and auras is never an upgrade"><input type="checkbox" id="prSpirit"> <span id="prSpiritText">Never run short of Spirit</span> <span class="dim small">(needs PoB)</span></label>
-            <label title="An item that leaves you without the Strength / Dexterity / Intelligence your gear and gems need is never an upgrade"><input type="checkbox" id="prAttrs"> Keep attribute requirements met <span class="dim small">(needs PoB)</span></label>
-            <label title="Movement speed counts toward an item's score, and an item that costs 3% or more of your movement speed is never a clean upgrade"><input type="checkbox" id="prSpeed"> Keep my movement speed <span class="dim small">(needs PoB)</span></label>
-          </div>
-          <div class="dim small" id="prNote"></div>
+          <div class="card-p" id="buildCard">
+            <h3>Your build</h3>
+            <div class="help">Paste a Path of Building code or <b>pobb.in</b> link, or link a guide's <b>.build</b> file. Items are then judged with your build's real numbers.</div>
+            <div class="row">
+              <input id="pobInput" class="grow" placeholder="https://pobb.in/abc123  or  eNrtXd…">
+              <button id="pobImport" class="primary">Import</button>
+            </div>
+            <div class="row"><button id="pobLinkFile" class="link" title="Pick the build file Path of Building saves (Documents\Path of Building\Builds), or a guide's .build file (Documents\My Games\Path of Exile 2\BuildPlanner). The app reads it again whenever it changes.">Or link a build file (PoB, or a guide's .build)…</button></div>
+            <div class="note" id="pobMsg"></div>
+            <div id="pobStatus" class="pob-status"></div>
+            <div class="pob-src small" id="pobSource"></div>
+            <div class="ctl-grid" id="pobControls">
+              <label class="ctl-wide"><input type="checkbox" id="pobUse"> Judge items with Path of Building</label>
+              <span class="ctl-label">Weigh</span>
+              <label class="ctl-range" title="How much damage counts against survivability when the app weighs an item"><span class="dim small">Damage</span> <input type="range" id="pobBalance" min="0" max="100" step="10"> <span class="dim small">Survivability</span></label>
+            </div>
+            <details class="fold"><summary>How items are judged</summary>
+              <div class="help">Export from Path of Building with Import/Export Build → Generate (<b>Path of Building 2</b> for PoE2, <b>Path of Building Community</b> for PoE1). Every item is put into your build and Path of Building works out what it does to your damage (or your minions'), effective HP, resistances and <span class="p2">Spirit</span><span class="p1">mana and life reservation</span>.</div>
+              <div class="help">Make sure PoB's tree, skills and Configuration match how you play. Items you copy in game (F2) replace PoB's in their slot. With a guide's .build file, the guide's gear is only used in slots where you haven't saved your own item.</div>
+            </details>
           </div>
           <div class="card-p" id="resCard">
             <h3>Your resistances</h3>
-          <div class="help">The <b>uncapped</b> numbers from your in-game character sheet (hover each one), with the gear you wear now. They follow your gear changes from then on.</div>
-          <div class="row resrow">
-            <label>Fire <input type="number" id="resFire" class="num"></label>
-            <label>Cold <input type="number" id="resCold" class="num"></label>
-            <label>Lightning <input type="number" id="resLightning" class="num"></label>
-            <label>Chaos <input type="number" id="resChaos" class="num"></label>
-            <label>Cap <input type="number" id="resCap" class="num" placeholder="75"></label>
-            <label title="How far over the cap a resistance must be before more of it stops counting. PoB numbers can include charms and buffs that aren't always on.">Safety buffer <input type="number" id="resBuffer" class="num" placeholder="15"></label>
+            <div class="help">The <b>uncapped</b> numbers from your character sheet, with the gear you wear now.</div>
+            <div class="res-grid">
+              <label>Fire <input type="number" id="resFire" class="num"></label>
+              <label>Cold <input type="number" id="resCold" class="num"></label>
+              <label>Lightning <input type="number" id="resLightning" class="num"></label>
+              <label>Chaos <input type="number" id="resChaos" class="num"></label>
+              <label>Cap <input type="number" id="resCap" class="num" placeholder="75"></label>
+              <label title="How far over the cap a resistance must be before more of it stops counting. PoB numbers can include charms and buffs that aren't always on.">Buffer <input type="number" id="resBuffer" class="num" placeholder="15"></label>
+            </div>
+            <div class="dim small" id="resSource"></div>
+            <div class="note" id="resMsg"></div>
           </div>
-          <div class="row">
-            <span class="dim small" id="resSource"></span>
-            <span class="note" id="resMsg"></span>
+          <div class="card-p">
+            <h3>Priorities</h3>
+            <div class="prio-list">
+              <label title="While a resistance is under the cap, items that fill it score much higher and Find upgrades looks for it first"><input type="checkbox" id="prRes"> <span>Cap my resistances first</span></label>
+              <label class="prio-sub" title="Count chaos resistance as one to cap too"><input type="checkbox" id="prChaos"> <span>including chaos</span></label>
+              <label title="An item that costs more than 5% of your damage (e.g. it doesn't have your minion damage mods) is LOSES DAMAGE, however much resistance or life it adds"><input type="checkbox" id="prDmg"> <span>Never lose damage</span> <span class="pob-tag">PoB</span></label>
+              <label title="An item that leaves you without enough Spirit for your minions and auras is never an upgrade"><input type="checkbox" id="prSpirit"> <span id="prSpiritText">Never run short of Spirit</span> <span class="pob-tag">PoB</span></label>
+              <label title="An item that leaves you without the Strength / Dexterity / Intelligence your gear and gems need is never an upgrade"><input type="checkbox" id="prAttrs"> <span>Keep attribute requirements met</span> <span class="pob-tag">PoB</span></label>
+              <label title="Movement speed counts toward an item's score, and an item that costs 3% or more of your movement speed is never a clean upgrade"><input type="checkbox" id="prSpeed"> <span>Keep my movement speed</span> <span class="pob-tag">PoB</span></label>
+            </div>
+            <div class="dim small" id="prNote"></div>
           </div>
+          <div class="card-p" id="filterCard">
+            <h3>Loot filter for this build</h3>
+            <div class="help">Adds a section to a copy of your filter that highlights drops worth a look for this build.</div>
+            <div class="row"><button id="filterMake">Make loot filter…</button><button id="filterEdit" title="Change how items look in any of your filters, in game: hide, show, tiers, colours, sounds, beams. Online filters are edited as a local copy.">Edit a filter…</button><button id="filterRemake" class="hidden" title="Write the same file again from your gear and build now, with your filter read again">Remake</button></div>
+            <div class="small" id="filterStatus"></div>
+            <div class="note" id="filterMsg"></div>
+            <details class="fold"><summary>What it highlights</summary>
+              <div class="help">The uniques your guide uses that you don't have yet, the best runes for your sockets (after a check on the Character page), better bases of the kinds you wear, your own bases, and identified magic and rare items with the mods your build values most. While levelling, bases show from your level. Your own filter isn't changed: pick the new file in the game's options.</div>
+            </details>
           </div>
         </div>
       </div>
@@ -128,10 +191,25 @@
 
     <section class="tab" id="tab-spend">
       <header class="page-head">
-        <div><h2>Where to spend</h2><div class="sub">Every slot searched within your price range and checked with your build: which upgrade gives you the most for your divines. If resistances are short, pairs of items that cap them together.</div></div>
+        <div><h2>Where to spend</h2><div class="sub">Which slot to spend your currency on: every slot searched at once and ranked by how much your build improves <b>per divine</b>.</div></div>
         <div class="page-actions"><button class="primary" id="spendRun">Find where to spend</button></div>
       </header>
-      <div id="spendBody"><div class="card-p"><h3>Nothing searched yet</h3><div class="help">Press <b>Find where to spend</b>. It runs one trade search per slot within your price range and checks every listing with your build. That takes a few minutes, because the trade site allows only a few searches a minute.</div><div class="row"><button class="link" data-goto="find">Set your price range on Find upgrades</button></div></div></div>
+      <details class="card-p spend-how" id="spendHow" open>
+        <summary>How to read this page</summary>
+        <ol class="how-steps">
+          <li><b>What it does.</b> For every gear slot it runs the same search as <b>Find upgrades</b>, inside the price range from <button class="link" data-goto="gear">Trade search settings on My gear</button>. The first 10 listings per slot are put into your build and scored. That takes a few minutes: the trade site allows only a few searches a minute.</li>
+          <li><b>pts</b> = how much better your build gets, as in the popup: roughly the % change to damage and effective HP (weighed with your Damage/Survivability slider), plus half a point per resistance point you still need. <b>+6 pts ≈ 6% better.</b></li>
+          <li><b>Per divine</b> = pts ÷ price. Higher means more improvement for your money. The table is sorted by it.</li>
+        </ol>
+        <div class="how-legend">
+          <div><span class="hl-k">Best value</span> the slot and listing at the top: the most pts per divine of all slots.</div>
+          <div><span class="hl-k">Every slot</span> the best-value listing in each slot. <b>Biggest gain</b> under it is the largest improvement there, whatever it costs.</div>
+          <div><span class="hl-k">Item name</span> click it to open the listing in the results window. <b>See all</b> shows the slot's whole search.</div>
+          <div><span class="hl-k">Alert me</span> get a notification when a new listing beats a gain you choose, under a price you choose.</div>
+          <div><span class="hl-k">Cap your resistances</span> shown when a resistance is short: two listings that cap it together.</div>
+        </div>
+      </details>
+      <div id="spendBody"><div class="card-p"><h3>Nothing searched yet</h3><div class="help">Press <b>Find where to spend</b> at the top right.</div><div class="row"><button class="link" data-goto="gear">Set your price range on My gear</button></div></div></div>
     </section>
 
     <section class="tab" id="tab-route">
@@ -144,66 +222,25 @@
 
     <section class="tab" id="tab-find">
       <header class="page-head">
-        <div><h2>Find upgrades</h2><div class="sub">Pick an item, set what you'll pay, then search. Results open scored against your gear.</div></div>
+        <div><h2>Custom search</h2><div class="sub">Your own trade search: exact stats, exact minimums.</div></div>
       </header>
-      <div class="card-p filterbar">
-        <div class="fb-row">
-          <label class="fb-item">Item <select id="findSlot"></select></label>
-          <span class="fb-sep"></span>
-          <label class="fb-price">Price from <input type="number" id="budgetMin" class="num" min="0" step="0.5" placeholder="any"></label>
-          <label>to <input type="number" id="budgetMax" class="num" min="0" step="0.5" placeholder="any"></label>
-          <select id="budgetCurrency" aria-label="Currency">
-            <option value="divine">Divine Orbs</option>
-            <option value="exalted">Exalted Orbs</option>
-            <option value="chaos">Chaos Orbs</option>
-          </select>
-          <button id="budgetClear" class="link">any price</button>
-          <span class="fb-sep"></span>
-          <label>Sellers <select id="findStatus">
-            <option value="available">Instant Buyout + In Person</option>
-            <option value="securable">Instant Buyout only</option>
-            <option value="online">In Person (online) only</option>
-            <option value="any">Any (incl. offline)</option>
-          </select></label>
-          <label>League <select id="findLeague"></select></label>
-          <button id="tradeRefresh" title="Reload leagues and stat list from the trade site" aria-label="Reload leagues"><i data-icon="refresh"></i></button>
-        </div>
-        <div class="fb-row fb-sub">
-          <span id="rateWrap">
-            <label>1 Divine = <input type="number" id="divineRate" class="num" min="0" placeholder="?"> <span id="rateUnit">Exalted</span></label>
-            <label><input type="checkbox" id="autoRate" checked> auto from poe.ninja</label>
-            <button id="rateRefresh" title="Get the latest rate now" class="link">refresh</button>
-          </span>
-          <span class="help" id="budgetHelp"></span>
-          <span class="help" id="rateStatus"></span>
-        </div>
-        <div class="fb-row fb-sub">
-          <label title="Levelling: every upgrade search (Find upgrades, Where to spend, alerts) only finds items you can wear at this level"><input type="checkbox" id="levelOn"> Levelling: only items I can wear at level</label>
-          <input type="number" id="levelCap" class="num" min="1" max="100" step="1" aria-label="Character level">
-          <button id="levelFromPob" class="link hidden" title="Use the level of your Path of Building character">use my character's level</button>
-          <label title="Every upgrade search (Find upgrades, Where to spend, alerts) leaves out corrupted items"><input type="checkbox" id="noCorrupted"> Skip corrupted items</label>
-        </div>
+      <div class="info-box">
+        <i data-icon="info"></i>
+        <div><b>Not weighted by your build or guide.</b> This page searches only the stats you tick, at the minimums you set. Your Path of Building build and your guide's gear don't decide what is searched for or how it's sorted (cheapest first). The results window still shows how each listing compares to what you wear.
+          For searches weighted by your build, use <b>Find upgrades</b> on a slot in <button class="link" data-goto="gear">My gear</button>.</div>
       </div>
 
       <div class="grid g-2">
         <div class="col">
           <div class="card-p">
+            <div class="cs-start">
+              <label class="cs-from">Start from <select id="findSlot"></select></label>
+              <span class="dim small">Sets the item type, and fills in that item's stats as a starting point.</span>
+            </div>
             <div id="findItem" class="finditem"></div>
             <div class="row"><span id="findNotice" class="note"></span></div>
-            <div class="actions find-actions">
-              <button id="findGear" class="primary" title="Listings that are better for your build, even with a different mix of stats. If nothing beats yours, it shows the ones that come close.">Find upgrades</button>
-              <button id="findSimilar" title="Listings with this item's stats at its values or higher. If nothing is listed it loosens step by step (90%, 80%, 65%) and tells you. Rune bonuses are left out – you can socket your own.">Same stats or better</button>
-              <button id="findQuick" title="Anything that scores higher with your stat weights, even with different stats">By my weights</button>
-              <button id="findCraft" title="Bases with this slot's key stats and an open affix you can craft">Craftable bases</button>
-              <button id="findPrice" title="What items like this sell for">What's it worth?</button>
-              <button id="findUniques" title="Every unique that fits this slot, tried in your Path of Building build, best first (the trade searches above leave uniques out)">Best uniques</button>
-            </div>
-            <div class="row"><span id="findMsg" class="note"></span></div>
-          </div>
-          <div class="card-p hidden" id="uniqueCard"></div>
-          <div class="card-p">
-            <h3>Custom search</h3>
-          <div class="help">Untick stats you don't care about, change the minimums, add stats you want instead, then search.</div>
+            <div class="cs-uses dim small" id="csUses"></div>
+          <h3 class="cs-h">Stats to search for</h3>
           <div class="row">
             <label>Set minimums to <select id="minScale">
               <option value="1">100%</option><option value="0.9">90%</option><option value="0.8">80%</option><option value="0.7">70%</option>
@@ -226,19 +263,9 @@
           </div>
         </div>
         <div class="col side-col">
-          <div class="card-p" id="ignoreCard">
-            <h3>Ignored stats</h3>
-          <div class="help">Stats you don't care about. <b>Ignore</b> leaves them out of the gear score and every search. <b>Exclude</b> also hides listings that have them.</div>
-          <table class="list" id="ignoreList"></table>
-          <div class="row">
-            <input id="ignoreAdd" list="ignoreStatsList" placeholder="Ignore another stat, e.g. # to maximum Mana" class="grow">
-            <button id="ignoreAddBtn">Add</button>
-            <button id="ignoreBrowse">Browse stats…</button>
-            <datalist id="ignoreStatsList"></datalist>
-          </div>
-          </div>
           <div class="card-p" id="watchCard">
-            <h3>Watchlist</h3>
+            <h3>Saved &amp; recent searches</h3>
+            <div class="dim small">From every kind of search, not just this page.</div>
             <div class="seg" role="tablist">
               <button class="seg-btn active" data-watch="saved" role="tab">Saved &amp; alerts</button>
               <button class="seg-btn" data-watch="recent" role="tab">Recent searches</button>

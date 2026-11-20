@@ -35,7 +35,7 @@ const WIZ = [
         <label><input type="radio" name="wizGame" value="poe1" ${state.game === 'poe1' ? 'checked' : ''}> Path of Exile 1</label></div>
       <p>League for trade searches and prices:</p>
       <div class="row"><select id="wizLeague"><option>Loading…</option></select></div>
-      <p class="help">Pick the league you play in (Standard is the permanent one). You can change it any time on <b>Find upgrades</b>, or from the popup.</p>`,
+      <p class="help">Pick the league you play in (Standard is the permanent one). You can change it any time in <b>Trade search settings</b> on My gear, or from the popup.</p>`,
     after: () => {
       // the current league stays unpinned (so the app follows the next league by itself) unless you pick one;
       // an answer for the game you've just left is dropped
@@ -103,7 +103,7 @@ const WIZ = [
         <li>The game was started <b>as administrator</b>: Windows then blocks the Ctrl+C the app sends. Start it normally.</li>
         <li>No tooltip under the mouse: hover the item until its tooltip shows, then press <b>${hk}</b>.</li>
         <li>Another program (Discord, a recording app, another overlay) uses <b>${hk}</b>: pick another key in Settings.</li></ul></div>
-      <ul><li><b>Find upgrades</b> searches the trade site and shows listings scored for your build.</li><li><b>What's it worth?</b> prices loot.</li><li>Set your price range and stats to ignore on the <b>Find upgrades</b> page.</li></ul>`;
+      <ul><li><b>Find upgrades</b> searches the trade site and shows listings scored for your build.</li><li><b>What's it worth?</b> prices loot.</li><li>Set your price range and stats to ignore in <b>Trade search settings</b> on My gear.</li></ul>`;
     },
     after: () => {
       clearTimeout(wizSlowTimer);

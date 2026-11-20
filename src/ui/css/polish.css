@@ -126,3 +126,109 @@ button.link.spend-pick.b { font-weight: 700; color: var(--stone); }
 .pb-spread { margin: 2px 0 4px; }
 .res-empty { grid-column: 1 / -1; padding: 40px 16px; text-align: center; color: var(--ash); }
 .res-empty b { color: var(--stone); }
+
+/* ---------- My gear: trade search settings, per-slot searches, a calmer right column ---------- */
+.ss-head { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.ss-head h3 { margin: 0; }
+.ss-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 14px; align-items: center; }
+.ss-label { color: var(--bronze-text); font: 600 13px var(--f-carved); }
+.ss-field { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.ss-field label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ss-field select { max-width: 100%; }
+.ss-field #levelCap { width: 60px; }
+.ss-foot { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--iron-lo); }
+.ss-foot .help { font-size: 13px; }
+#searchCard .note:empty { display: none; }
+#searchCard details.fold { margin-top: 4px; }
+#searchCard details.fold > summary { margin-bottom: 4px; }
+
+#slots td { vertical-align: top; }
+#slots td.slot-actions { width: 1%; white-space: nowrap; text-align: right; }
+.slot-btns { display: inline-flex; gap: 6px; align-items: flex-start; }
+.slot-btns > button { padding: 6px 11px 5px; }
+details.slot-more { position: relative; }
+details.slot-more > summary { list-style: none; cursor: pointer; font: 700 14px/1.1 var(--f-carved); color: var(--stone); border: 1px solid var(--iron-hi); background: var(--abyss); padding: 6px 10px 5px; user-select: none; }
+details.slot-more > summary::-webkit-details-marker { display: none; }
+details.slot-more > summary::after { content: " ▾"; color: var(--ash); }
+details.slot-more[open] > summary, details.slot-more > summary:hover { border-color: var(--bronze); color: var(--bone); }
+.slot-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 210px; display: flex; flex-direction: column; padding: 4px; background: var(--abyss); border: 1px solid var(--iron-hi); box-shadow: var(--frame), 0 6px 14px rgba(0, 0, 0, .55); text-align: left; }
+.slot-menu button { border: 1px solid transparent; background: none; text-align: left; padding: 7px 10px 6px; color: var(--stone); font-weight: 500; }
+.slot-menu button:hover:not(:disabled) { background: var(--iron-lo); border-color: transparent; color: var(--gold-hi); }
+.slot-menu hr { border: 0; border-top: 1px solid var(--iron); margin: 4px 2px; }
+.slot-menu .danger-text { color: var(--down); }
+tr.slot-out > td { padding: 2px 7px 12px; border-bottom: 1px solid var(--iron); }
+.slot-res { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.slot-res-k { font: 600 13px var(--f-carved); color: var(--bronze-text); }
+.slot-res .note { margin: 0; }
+.slot-msg { max-width: none; margin-top: 0; }
+.uniq-box table.uniques { margin-top: 6px; }
+.uniq-box .uniq-more { margin-top: 6px; }
+.slot-legend { margin-top: 10px; font-size: 13px; }
+
+/* the build card: name and main skill, then the numbers in a grid, then the resistances */
+.pob-status:empty { display: none; }
+.pob-status { margin: 10px 0 6px; padding: 10px 12px; border: 1px solid var(--iron); background: var(--void); }
+.pob-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 15px; }
+.pob-skill { margin-top: 3px; font-size: 14px; }
+.pob-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin: 10px 0 8px; }
+.pst { display: flex; flex-direction: column; gap: 1px; padding: 6px 8px; border: 1px solid var(--iron-lo); background: var(--abyss); }
+.pst-k { font-size: 12px; color: var(--ash); }
+.pst b { font: 600 17px/1.15 var(--f-text); color: var(--bone); font-variant-numeric: tabular-nums; }
+.pst-sub { font-size: 12px; color: var(--ash); }
+.res-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.res-chip { font-size: 13px; padding: 2px 8px; border: 1px solid var(--iron-hi); color: var(--stone); }
+.res-chip b { font-weight: 700; }
+.res-chip.ok b { color: var(--up); }
+.res-chip.under { border-color: color-mix(in srgb, var(--down) 55%, transparent); }
+.res-chip.under b { color: var(--down); }
+.pob-over { margin-top: 8px; }
+details.pob-warn { margin-top: 8px; }
+details.pob-warn > summary { cursor: pointer; color: var(--warn); font-size: 13.5px; }
+details.pob-warn .note { margin: 6px 0 0 18px; }
+.pob-stats { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+.pob-src { color: var(--ash); margin: 6px 0; line-height: 1.5; }
+.pob-src:empty { display: none; }
+.ctl-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; align-items: center; margin: 10px 0 4px; }
+.ctl-grid .ctl-wide { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 6px; }
+.ctl-label { color: var(--bronze-text); font: 600 13px var(--f-carved); }
+.ctl-range { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ctl-range input[type=range] { flex: 1 1 auto; min-width: 80px; }
+#buildCard .note:empty, #resCard .note:empty, #filterCard .note:empty { display: none; }
+.res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; margin: 10px 0 6px; }
+.res-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--ash); }
+.res-grid .num { width: 100%; }
+.prio-list { display: flex; flex-direction: column; gap: 2px; }
+.prio-list label { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--iron-lo); }
+.prio-list label:last-child { border-bottom: none; }
+.prio-list label > span:first-of-type { flex: 1 1 auto; }
+.prio-list .prio-sub { padding-left: 24px; color: var(--ash); }
+.prio-list .pob-tag { flex: none; }
+#prNote { margin-top: 8px; line-height: 1.45; }
+
+/* Custom search: what it is (not weighted), the item it starts from, what else it uses */
+.info-box { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 18px; padding: 12px 15px; border: 1px solid var(--bronze); background: color-mix(in srgb, var(--gold) 6%, transparent); color: var(--stone); line-height: 1.5; }
+.info-box > i { flex: none; color: var(--gold); font-size: 20px; line-height: 1; margin-top: 2px; }
+.info-box b { color: var(--bone); }
+.cs-start { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.cs-from { display: inline-flex; align-items: center; gap: 8px; font: 600 14px var(--f-carved); color: var(--bronze-text); }
+.cs-from select { min-width: 260px; max-width: 460px; font: 14px var(--f-text); }
+.finditem { margin: 10px 0 4px; }
+.cs-uses { margin: 4px 0 2px; }
+h3.cs-h { margin: 16px 0 4px; padding-top: 12px; border-top: 1px solid var(--iron-lo); }
+
+/* Where to spend: how to read it, the top picks as tiles, column headers that say what they mean */
+details.spend-how > summary { font: 600 15px var(--f-carved); color: var(--gold); cursor: pointer; }
+details.spend-how[open] > summary { margin-bottom: 8px; }
+.how-steps { margin: 0 0 10px; padding-left: 20px; line-height: 1.55; }
+.how-steps li { margin: 4px 0; }
+.how-steps li::marker { color: var(--gold); }
+.how-legend { display: grid; gap: 4px; font-size: 14px; color: var(--stone); border-top: 1px solid var(--iron-lo); padding-top: 8px; }
+.hl-k { display: inline-block; min-width: 150px; font: 600 13px var(--f-carved); color: var(--bronze-text); }
+.spend-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 8px 0; }
+.spend-tile { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--iron-hi); background: var(--void); min-width: 0; }
+.spend-tile.first { border-color: var(--bronze); }
+.st-rank { font: 600 12px var(--f-carved); color: var(--bronze-text); }
+.st-slot { font: 600 19px/1.2 var(--f-carved); color: var(--gold-hi); }
+.st-per { color: var(--bone); font-weight: 600; }
+.st-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kv.spend th .th-sub { display: block; font: 400 12px var(--f-text); color: var(--ash); }

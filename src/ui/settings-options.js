@@ -163,7 +163,10 @@ function readBudget() {
 }
 function budgetHelp() {
   const b = readBudget();
-  $('#rateWrap').classList.toggle('hidden', $('#budgetCurrency').value !== 'divine');
+  const noRate = $('#budgetCurrency').value !== 'divine';
+  $('#rateWrap').classList.toggle('hidden', noRate);
+  if ($('#rateLabel')) $('#rateLabel').classList.toggle('hidden', noRate);
+  if (typeof renderUses === 'function') renderUses();
   if (!b) { $('#budgetHelp').textContent = 'No price limits. They apply to every trade search.'; return; }
   const name = { divine: 'div', exalted: 'ex', chaos: 'chaos' }[b.currency];
   const range = b.min != null && b.max != null ? `between ${b.min} and ${b.max} ${name}` : b.max != null ? `up to ${b.max} ${name}` : `at least ${b.min} ${name}`;
@@ -195,7 +198,7 @@ function loadBudget() {
     $('#prSpirit').parentNode.title = p1g ? 'An item that leaves too little unreserved mana or life for your auras is never an upgrade' : 'An item that leaves you without enough Spirit for your minions and auras is never an upgrade';
   }
   // don't overwrite what you're typing, unless the form still shows the other game's budget
-  if (budgetGame === state.game && document.activeElement && document.activeElement.closest && document.activeElement.closest('.filterbar')) return;
+  if (budgetGame === state.game && document.activeElement && document.activeElement.closest && document.activeElement.closest('#searchCard')) return;
   budgetGame = state.game;
   $('#budgetMax').value = b && b.max != null ? b.max : '';
   $('#budgetMin').value = b && b.min != null ? b.min : '';
@@ -255,7 +258,7 @@ $('#autoRate').addEventListener('change', async () => {
   showRate(false);
 });
 $('#rateRefresh').addEventListener('click', () => showRate(true));
-document.querySelector('.tabs button[data-tab="find"]').addEventListener('click', () => showRate(false));
+document.querySelector('.tabs button[data-tab="gear"]').addEventListener('click', () => showRate(false));
 window.api.onFindUpgrade(() => showRate(false));
 
 // the loot filter editor over the game (off until you pick a key; also in the tray menu and on My gear)

@@ -12,6 +12,10 @@ const gearLib = require('./core/gearscore');
 const { Store } = require('./core/store');
 const { KeySender } = require('./keysender');
 
+// Local fork: run from source with the same data as the installed app (%APPDATA%\PoE2 Upgrade Checker),
+// so your characters, gear, builds and settings carry over. POEUC_DATA points it somewhere else.
+if (!app.isPackaged) app.setPath('userData', process.env.POEUC_DATA || path.join(app.getPath('appData'), 'PoE2 Upgrade Checker'));
+
 let store;
 const lastWorth = new Map(); // item id -> typical price (ex) from "What's it worth?"
 let tray;

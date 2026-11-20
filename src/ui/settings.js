@@ -40,8 +40,9 @@ async function load() {
   renderSaved();
   renderHistory();
   window.renderProfilePicker($('#gsPicker'));
-  // "By my weights" only makes sense when you score by stat weights (Custom)
-  $('#findQuick').classList.toggle('hidden', state.settings.build !== 'off');
+  // trade leagues and the Divine rate are shown on My gear (Trade search settings): load them once per game
+  if (window.__tradeFor !== state.game) { window.__tradeFor = state.game; ensureTradeInfo(false).catch(() => {}); showRate(false); }
+  if (document.activeElement !== $('#findStatus')) $('#findStatus').value = state.settings.status || 'available';
   $('#popupPosition').value = state.settings.popupPosition || 'cursor';
   $('#uiScale').value = String(state.settings.uiScale || 1);
   $('#popupDetail').value = state.settings.popupDetail || 'compact';
@@ -128,34 +129,88 @@ function renderSlots() {
     return `<tr class="slotrow"><td>${esc(s)}</td><td>${gcell}</td>
       <td class="item-cell">${it ? `<b class="rar-${esc(String(it.rarity || '').toLowerCase())}">${esc(it.name)}</b> <span class="dim">${esc(it.baseType !== it.name ? it.baseType : '')}</span>${it.fromPob ? ' <span class="dim small">· from PoB</span>' : ''}<div class="dim mods-line" title="${esc(summary(it))}">${esc(summary(it).replace(/\(-?\d+(?:\.\d+)?-\d+(?:\.\d+)?\)/g, ''))}</div>`
         : '<span class="empty">not set</span>'}</td>
-      <td class="nowrap">${it ? `<button data-quick="${esc(s)}">Find upgrades</button>
-        <button class="link" data-custom="${esc(s)}">Custom…</button>
-        <button class="link" data-clear="${esc(s)}" title="Forget the item saved for this slot">Clear</button>` : ''}</td></tr>`;
+      <td class="slot-actions">${it ? slotActions(s, it) : ''}</td></tr>
+      <tr class="slot-out hidden" data-out="${esc(s)}"><td colspan="4"></td></tr>`;
   };
   $('#slots').innerHTML = `<tr><th>Slot</th><th>${state.game === 'poe1' ? '' : 'Gear score'}</th><th>Item</th><th></th></tr>` + main.map(row).join('')
     + `<tr><td colspan="4"><button class="link" id="extraToggle">${extraOpen ? '▾' : '▸'} ${state && state.game === 'poe1' ? 'Weapon swap, flasks &amp; jewels' : 'Weapon swap, flasks, charms &amp; jewels'} (${showExtras.length} saved)</button></td></tr>`
     + (extraOpen ? extras.map(row).join('') : '')
     + '<tr><td colspan="4" class="note" id="gearMsg"></td></tr>';
   $('#extraToggle').addEventListener('click', () => { window.__extraOpen = !extraOpen; renderSlots(); });
-  // Clear asks once more (a mis-click would lose the saved item)
-  document.querySelectorAll('[data-clear]').forEach((b) => b.addEventListener('click', async () => {
-    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Clear it?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = 'Clear'; } }, 4000); return; }
-    await window.api.clearSlot(b.dataset.clear); load();
-  }));
+  bindSlotActions();
+}
+
+// Each slot's searches: Find upgrades (weighted by your build) up front, the rest in a More menu.
+// They all use the Trade search settings at the top of the page (price, sellers, league, filters).
+function slotActions(s, it) {
+  const gear = true; // every slot the app saves can be searched (as before)
+  const e = esc(s);
+  const byWeights = state.settings.build === 'off' && !state.pobOn;
+  const unique = String(it.rarity || '').toLowerCase() === 'unique';
+  const items = [
+    gear ? `<button data-act="similar" data-slot="${e}" title="Listings with this item's stats at its values or higher. Loosens to 90%, 80%, 65% if nothing is listed.">Same stats or better</button>` : '',
+    gear && byWeights ? `<button data-act="weights" data-slot="${e}" title="Anything that scores higher with your own stat weights">By my weights</button>` : '',
+    gear && !unique ? `<button data-act="craft" data-slot="${e}" title="Rare bases with this slot's key stats and an open prefix and suffix">Craftable bases</button>` : '',
+    gear && !/^Jewel/.test(s) && state.pobOn ? `<button data-act="uniques" data-slot="${e}" title="Every unique that fits this slot, tried in your Path of Building build">Best uniques</button>` : '',
+    `<button data-act="price" data-slot="${e}" title="What this item would sell for">What's it worth?</button>`,
+    `<button data-act="custom" data-slot="${e}" title="Open Custom search with this item's stats filled in (not weighted by your build)">Custom search…</button>`,
+    `<hr><button data-act="clear" data-slot="${e}" class="danger-text" title="Forget the item saved for this slot">Clear slot</button>`,
+  ].filter(Boolean).join('');
+  return `<div class="slot-btns">${gear ? `<button class="primary" data-act="upgrade" data-slot="${e}" title="${state.pobOn ? 'Path of Building weights the search by what each stat does to your build, then checks every listing in your build' : 'Listings that score higher for your build (gear score)'}">Find upgrades</button>` : ''}
+    <details class="slot-more"><summary title="More searches for this slot">More</summary><div class="slot-menu">${items}</div></details></div>`;
+}
+function slotOut(slot) {
+  const tr = document.querySelector(`.slot-out[data-out="${CSS.escape(slot)}"]`);
+  document.querySelectorAll('.slot-out').forEach((x) => { if (x !== tr) { x.classList.add('hidden'); x.firstElementChild.innerHTML = ''; } });
+  if (!tr) return null;
+  tr.classList.remove('hidden');
+  return tr.firstElementChild;
+}
+function searchExtraGear() {
+  return { league: ($('#findLeague') && $('#findLeague').value) || undefined, status: $('#findStatus').value };
+}
+let slotBusy = false;
+async function runSlotAction(act, slot, btn) {
+  if (act === 'custom') { openFind(slot); return; }
+  if (act === 'clear') {
+    if (!btn.dataset.sure) { btn.dataset.sure = '1'; btn.textContent = 'Click again to clear'; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.sure; btn.textContent = 'Clear slot'; } }, 4000); return; }
+    await window.api.clearSlot(slot); load(); return;
+  }
+  if (slotBusy) return;
+  const out = slotOut(slot);
+  if (!out) return;
+  if (act === 'uniques') { window.showBestUniques(slot, out); return; }
+  const label = { upgrade: 'Find upgrades', similar: 'Same stats or better', weights: 'By my weights', craft: 'Craftable bases', price: "What's it worth?" }[act];
+  out.innerHTML = `<div class="slot-res"><span class="slot-res-k">${esc(label)}</span><span class="note slot-msg"><span class="spinner"></span> Searching the trade site…</span></div>`;
+  const msg = out.querySelector('.slot-msg');
+  slotBusy = true;
+  document.querySelectorAll('[data-act]').forEach((x) => { if (x.dataset.act !== 'custom') x.disabled = true; });
+  let res;
+  try {
+    await window.api.setSetting('budget', readBudget());
+    res = act === 'price' ? await window.api.priceCheck(slot) : await window.api.quickFind(slot, act, searchExtraGear());
+  } catch (err) { res = { ok: false, error: (err && err.message) || String(err) }; } finally {
+    slotBusy = false;
+    document.querySelectorAll('[data-act]').forEach((x) => { x.disabled = false; });
+  }
+  window.showSearchResult(msg, res);
+}
+function bindSlotActions() {
   // the full mods of an item: click its line
   document.querySelectorAll('.mods-line').forEach((m) => m.addEventListener('click', () => m.classList.toggle('open')));
-  // the answer shows right under the button you clicked (the table's last row is often off screen)
-  document.querySelectorAll('[data-quick]').forEach((b) => b.addEventListener('click', async () => {
-    document.querySelectorAll('.slot-msg').forEach((x) => x.remove());
-    const msg = document.createElement('div'); msg.className = 'note slot-msg'; msg.textContent = 'Searching the trade site…';
-    b.parentNode.appendChild(msg);
-    document.querySelectorAll('[data-quick]').forEach((x) => { x.disabled = true; });
-    try { window.showSearchResult(msg, await window.api.quickFind(b.dataset.quick, 'upgrade')); } finally {
-      document.querySelectorAll('[data-quick]').forEach((x) => { x.disabled = false; });
-    }
+  document.querySelectorAll('#slots [data-act]').forEach((b) => b.addEventListener('click', () => {
+    const menu = b.closest('details'); if (menu && b.dataset.act !== 'clear') menu.open = false;
+    runSlotAction(b.dataset.act, b.dataset.slot, b);
   }));
-  document.querySelectorAll('[data-custom]').forEach((b) => b.addEventListener('click', () => openFind(b.dataset.custom)));
+  // one More menu open at a time
+  document.querySelectorAll('#slots details.slot-more').forEach((d) => d.addEventListener('toggle', () => {
+    if (d.open) document.querySelectorAll('#slots details.slot-more[open]').forEach((o) => { if (o !== d) o.open = false; });
+  }));
 }
+document.addEventListener('click', (e) => {
+  if (!e.target.closest || e.target.closest('details.slot-more')) return;
+  document.querySelectorAll('details.slot-more[open]').forEach((o) => { o.open = false; });
+});
 
 // Discord community (sidebar and Settings → Startup & updates): opens poe2upgrade.com/discord in the browser
 document.querySelectorAll('[data-discord]').forEach((b) => b.addEventListener('click', () => window.api.openUrl('https://poe2upgrade.com/discord')));

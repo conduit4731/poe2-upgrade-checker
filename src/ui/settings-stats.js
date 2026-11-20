@@ -33,6 +33,7 @@ function renderIgnore() {
         <option value="exclude" ${r.mode === 'exclude' ? 'selected' : ''}>Exclude listings with it</option>
       </select></td><td><button data-unignore="${esc(r.key)}">Remove</button></td></tr>`);
   $('#ignoreList').innerHTML = presetRows.join('') + keyRows.join('');
+  const ic = $('#ignoreCount'); if (ic) ic.textContent = rules.length ? `(${rules.length} active)` : '(none)';
   $('#ignoreStatsList').innerHTML = (state.seenStats || []).filter((k) => !k.startsWith('[')).map((k) => `<option value="${esc(k)}">`).join('');
   document.querySelectorAll('#ignoreList [data-preset]').forEach((cb) => cb.addEventListener('change', () => {
     const id = cb.dataset.preset;
@@ -198,14 +199,10 @@ $('#resultsHotkeySave').addEventListener('click', async () => {
 });
 document.querySelectorAll('[data-goto]').forEach((b) => b.addEventListener('click', () => document.querySelector(`.tabs button[data-tab="${b.dataset.goto}"]`).click()));
 window.api.onSettingsTab((tab) => {
-  // price range, sellers and ignored stats now live on the Find upgrades page
-  const focus = tab === 'search' ? '#ignoreCard' : tab === 'league' ? '#findLeague' : null;
-  if (tab === 'search' || tab === 'league') tab = 'find';
+  // price range, sellers, league and ignored stats live in Trade search settings on My gear
+  const focus = tab === 'search' ? '#ignoreFold' : tab === 'league' ? '#findLeague' : null;
+  if (tab === 'search' || tab === 'league') tab = 'gear';
   const b = document.querySelector(`.tabs button[data-tab="${tab}"]`);
   if (b) b.click();
-  if (focus) setTimeout(() => { const el = $(focus); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (focus === '#findLeague') el.focus(); } }, 150);
+  if (focus) setTimeout(() => { const el = $(focus); if (el) { if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (focus === '#findLeague') el.focus(); } }, 150);
 });
-
-// Find tab extra buttons
-$('#findCraft').addEventListener('click', () => runFind(() => window.api.quickFind(toTarget($('#findSlot').value), 'craft', searchExtra())));
-$('#findPrice').addEventListener('click', () => runFind(() => window.api.priceCheck(toTarget($('#findSlot').value))));

@@ -54,7 +54,7 @@ async function renderPobSource() {
   if (src.planner && src.stages && src.stages.length > 1) {
     const cur = src.stage;
     const opts = src.stages.map((x) => `<option value="${x.to}" ${cur !== 'level' && Number(cur) >= x.from && Number(cur) <= x.to ? 'selected' : ''}>${esc(x.label)}</option>`).join('');
-    stageHtml = `<div class="row small">Stage <select id="pobStage">${opts}<option value="level" ${cur === 'level' ? 'selected' : ''}>Follow my level${src.levelNow ? ` (${src.levelNow})` : ' (set it on Find upgrades)'}</option></select></div>`;
+    stageHtml = `<div class="row small">Stage <select id="pobStage">${opts}<option value="level" ${cur === 'level' ? 'selected' : ''}>Follow my level${src.levelNow ? ` (${src.levelNow})` : ' (set it in Trade search settings)'}</option></select></div>`;
   }
   el.innerHTML = (src.planner
     ? `Guide <b>${esc(src.title || src.name)}</b>${src.type === 'file' ? ` (<span title="${esc(src.name)}">${esc(src.name)}</span>): the file is followed, so a newer version of the guide updates this character` : ''}${when}.`
@@ -162,14 +162,25 @@ async function renderPob(load) {
     if (!window.__pobAutoLoad) { window.__pobAutoLoad = true; el.innerHTML = '<div class="dim"><span class="spinner"></span> Starting Path of Building…</div>'; renderPob(true); return; }
     el.innerHTML = '<div class="dim">Build saved. Path of Building starts the first time an item is checked. <button class="link" id="pobLoad">Check it now</button></div>'; const b = $('#pobLoad'); if (b) b.addEventListener('click', () => { el.innerHTML = '<div class="dim"><span class="spinner"></span> Starting Path of Building…</div>'; renderPob(true); }); return;
   }
-  const res = (m.res || []).filter((r) => r.value != null && !(m.ci && r.el === 'Chaos')).map((r) => `${esc(r.el)} ${Math.round(r.value)}%${r.total > r.value ? ` <span class="dim">(${Math.round(r.total)})</span>` : ''}`).join(' · ');
+  const resCells = (m.res || []).filter((r) => r.value != null && !(m.ci && r.el === 'Chaos')).map((r) => {
+    const max = Number(r.max) || 75;
+    return `<span class="res-chip ${Math.round(r.value) >= max ? 'ok' : 'under'}" title="${esc(r.el)} resistance${r.total > r.value ? `: ${Math.round(r.total)} uncapped` : ''}">${esc(r.el)} <b>${Math.round(r.value)}%</b></span>`;
+  }).join('');
   $('#prChaos').disabled = !!m.ci || !$('#prRes').checked;
   if (m.ci) { $('#prChaos').checked = false; $('#prChaos').parentNode.title = 'Chaos Inoculation: you are immune to chaos damage, so chaos resistance is ignored'; }
-  el.innerHTML = `<div class="pob"><span class="pob-tag">PoB</span> <b>${esc(m.ascendancy || m.className || '')}</b> level ${esc(m.level)}${m.mainSkill ? ` · ${esc(m.mainSkill)}` : ''}${m.ci ? ' · <span title="Life is 1 in your build: chaos resistance is ignored everywhere">Chaos Inoculation</span>' : ''}</div>
-    <div class="dim">${m.dpsKey === 'MinionDPS' ? 'Minion DPS' : 'DPS'} <b>${kfmt(m.dps)}</b> · Effective HP <b>${kfmt(m.ehp)}</b> · ES <b>${kfmt(m.es)}</b>${m.spirit == null ? '' : ` · Spirit free <b>${m.spiritFree == null ? '–' : Math.round(m.spiritFree)}</b> of ${Math.round(m.spirit)}`}</div>
-    <div class="dim">Resistances: ${res}</div>
-    ${m.overridden && m.overridden.length ? `<div class="dim">Using your in-game copies for: ${esc(m.overridden.join(', '))}</div>` : ''}
-    ${m.mismatch.map((x) => `<div class="note">${window.ICON.warn} ${esc(x)}</div>`).join('')}`;
+  const stat = (k, v, sub) => `<div class="pst"><span class="pst-k">${k}</span><b>${v}</b>${sub ? `<span class="pst-sub">${sub}</span>` : ''}</div>`;
+  el.innerHTML = `<div class="pob-head"><span class="pob-tag">PoB</span> <b>${esc(m.ascendancy || m.className || '')}</b> <span class="dim">level ${esc(m.level)}</span>${m.ci ? ' <span class="dim" title="Life is 1 in your build: chaos resistance is ignored everywhere">· Chaos Inoculation</span>' : ''}</div>
+    ${m.mainSkill ? `<div class="pob-skill"><span class="dim">Judged on</span> <b>${esc(m.mainSkill)}</b></div>` : ''}
+    <div class="pob-stats">
+      ${stat(m.dpsKey === 'MinionDPS' ? 'Minion DPS' : 'DPS', kfmt(m.dps))}
+      ${stat('Effective HP', kfmt(m.ehp))}
+      ${stat('Energy Shield', kfmt(m.es))}
+      ${m.spirit == null ? '' : stat('Spirit free', m.spiritFree == null ? '–' : Math.round(m.spiritFree), `of ${Math.round(m.spirit)}`)}
+    </div>
+    ${resCells ? `<div class="res-chips">${resCells}</div>` : ''}
+    ${m.overridden && m.overridden.length ? `<div class="dim small pob-over">Your in-game items replace PoB's in: ${esc(m.overridden.join(', '))}</div>` : ''}
+    ${m.mismatch.length === 1 ? `<div class="note">${window.ICON.warn} ${esc(m.mismatch[0])}</div>`
+    : m.mismatch.length ? `<details class="pob-warn"><summary>${window.ICON.warn} ${m.mismatch.length} things to check in Path of Building</summary>${m.mismatch.map((x) => `<div class="note">${esc(x)}</div>`).join('')}</details>` : ''}`;
 }
 // what "Better for my build" does depends on the build: PoB judges, or the gear score, or off
 function renderModeHints() {

@@ -13,7 +13,7 @@ window.renderProfilePicker = function (el, opts) {
   const options = (list, cur) => list.map((x) => `<option value="${esc(x.id)}" ${x.id === cur ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
   const canFit = state.pobOn && state.game === 'poe2';
   const how = custom ? 'The gear score uses your own <b>Stat weights</b>.'
-    : esc(now.summary || '') + ' Ignored stats (Find upgrades page) are left out.' + (canFit && state.settings.buildPicked === false ? ' <span class="dim">Matched to your Path of Building build.</span>' : '');
+    : esc(now.summary || '') + ' Ignored stats (Trade search settings on My gear) are left out.' + (canFit && state.settings.buildPicked === false ? ' <span class="dim">Matched to your Path of Building build.</span>' : '');
   el.innerHTML = `<div class="gs-pick">
       <label><span>Damage</span><select class="gs-off" ${custom ? 'disabled' : ''}>${options(parts.off, now.off || 'any')}</select></label>
       <label><span>Defence</span><select class="gs-def" ${custom ? 'disabled' : ''}>${options(parts.def, now.def || 'life')}</select></label>

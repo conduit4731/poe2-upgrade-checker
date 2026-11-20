@@ -1,6 +1,7 @@
 'use strict';
 
-// Settings window: the Find upgrades page (slots, stats to search for, weights, testing an item).
+// Settings window: the Custom search page (an item to start from, the stats to search for), stat
+// weights and testing an item. The build-weighted searches are per slot on My gear (settings.js).
 
 // ---------- Find upgrade tab ----------
 
@@ -49,24 +50,35 @@ async function fillFindSlots(selected) {
   }));
   const seen = new Set();
   recent = all.filter((r, i) => { const k = `${r.name}|${r.itemClass}|${texts[i]}`; if (seen.has(k)) return false; seen.add(k); return true; });
-  const opts = state.slots.filter((s) => state.equipped[s])
-    .map((s) => `<option value="${esc(s)}">Equipped ${esc(s)} – ${esc(state.equipped[s].name)}</option>`);
-  recent.forEach((r, i) => opts.push(`<option value="item:${esc(r.id)}">${i === 0 ? 'Just copied' : 'Copied'}: ${esc(r.name)} (${esc(r.itemClass)})</option>`));
-  $('#findSlot').innerHTML = opts.join('') || '<option value="">Nothing saved or copied yet</option>';
+  const eq = state.slots.filter((s) => state.equipped[s])
+    .map((s) => `<option value="${esc(s)}">${esc(s)}: ${esc(state.equipped[s].name)}</option>`);
+  const cp = recent.map((r, i) => `<option value="item:${esc(r.id)}">${i === 0 ? 'Just copied: ' : ''}${esc(r.name)} (${esc(r.itemClass)})</option>`);
+  $('#findSlot').innerHTML = (eq.length ? `<optgroup label="Your gear">${eq.join('')}</optgroup>` : '')
+    + (cp.length ? `<optgroup label="Copied in game">${cp.join('')}</optgroup>` : '')
+    || '<option value="">Nothing saved or copied yet</option>';
   let want = fromTarget(selected);
   if (want === '__last') want = recent[0] ? 'item:' + recent[0].id : '';
   if (want && [...$('#findSlot').options].some((o) => o.value === want)) $('#findSlot').value = want;
   syncFindActions();
 }
-// the item searches need an item: with nothing saved or copied they stay greyed out
-// (Custom search below still works with stats you add yourself)
+// the search needs an item (it sets the trade site's item type): with nothing saved or copied it's greyed out
 function syncFindActions() {
   const none = !$('#findSlot').value;
-  document.querySelectorAll('.find-actions button').forEach((b) => {
-    b.disabled = none;
-    if (none) b.title = b.title.startsWith('Needs an item') ? b.title : `Needs an item: save your gear on My gear, or copy one in game. ${b.title}`;
-    else b.title = b.title.replace(/^Needs an item: save your gear on My gear, or copy one in game\. /, '');
-  });
+  $('#findSearch').disabled = none;
+  $('#findSearch').title = none ? 'Needs an item: save your gear on My gear, or copy one in game.' : '';
+  renderUses();
+}
+// what the search also uses, from Trade search settings on My gear
+function renderUses() {
+  const el = $('#csUses'); if (!el || !state) return;
+  const b = state.settings.budget;
+  const cur = b ? ({ divine: 'div', exalted: 'ex', chaos: 'chaos' }[b.currency] || '') : '';
+  const price = !b ? 'any price' : b.min != null && b.max != null ? `${b.min}–${b.max} ${cur}` : b.max != null ? `up to ${b.max} ${cur}` : `from ${b.min} ${cur}`;
+  const lv = state.settings.leveling && state.settings.leveling.on ? ` · level ${state.settings.leveling.level} or lower` : '';
+  const sellers = ($('#findStatus') && $('#findStatus').selectedOptions[0]) ? $('#findStatus').selectedOptions[0].textContent : '';
+  el.innerHTML = `Also uses your trade search settings: <b>${esc(price)}</b> · ${esc(sellers)} · ${esc(($('#findLeague') && $('#findLeague').value) || state.settings.league || '')}${esc(lv)}${state.settings.noCorrupted ? ' · no corrupted' : ''} <button class="link" data-goto="gear">change</button>`;
+  const g = el.querySelector('[data-goto]');
+  if (g) g.addEventListener('click', () => document.querySelector('.tabs button[data-tab="gear"]').click());
 }
 
 let findSeq = 0; // a newer pick (or another character) wins over a slower answer for the one before
@@ -81,10 +93,6 @@ async function buildFindRows() {
     findRows = [];
   } else {
     $('#findItem').innerHTML = `<b>${esc(it.name)}</b> ${esc(it.baseType !== it.name ? it.baseType : '')} <span class="dim">(${esc(it.itemClass)}${it.rarity ? ', ' + esc(it.rarity) : ''})</span>`;
-    // not gear (a waystone, a map, currency...): only a price check makes sense
-    const notGear = !it.slot;
-    for (const id of ['findGear', 'findSimilar', 'findCraft', 'findWeights']) { const b = document.getElementById(id); if (b) b.classList.toggle('hidden-notgear', notGear); }
-    if (notGear) $('#findNotice').textContent = "This isn't gear, so there's nothing to upgrade: What's it worth? prices it.";
     const scale = Number($('#minScale').value) || 1;
     findRows = rows.map((x) => ({
       key: x.key, source: x.source, current: x.value,
@@ -166,7 +174,7 @@ async function runFind(fn, msgSel) {
   await window.api.setSetting('budget', readBudget());
   $('#findMsg').textContent = ''; $('#findMsg2').textContent = '';
   msg.textContent = 'Searching the trade site…';
-  const btns = [...document.querySelectorAll('.find-actions button, #findSearch')];
+  const btns = [...document.querySelectorAll('#findSearch')];
   btns.forEach((b) => { b.disabled = true; });
   let res;
   try { res = await fn(); } catch (err) { res = { ok: false, error: (err && err.message) || String(err) }; } finally {
@@ -183,9 +191,6 @@ $('#findSearch').addEventListener('click', () => runFind(() => {
     matchBase: $('#findSameBase').checked, ...searchExtra(),
   });
 }, '#findMsg2'));
-$('#findGear').addEventListener('click', () => runFind(() => window.api.quickFind(toTarget($('#findSlot').value), 'upgrade', searchExtra())));
-$('#findSimilar').addEventListener('click', () => runFind(() => window.api.quickFind(toTarget($('#findSlot').value), 'similar', searchExtra())));
-$('#findQuick').addEventListener('click', () => runFind(() => window.api.quickFind(toTarget($('#findSlot').value), 'weights', searchExtra())));
 $('#findStatus').addEventListener('change', () => window.api.setSetting('status', $('#findStatus').value));
 $('#findLeague').addEventListener('change', () => window.api.setSetting('league', $('#findLeague').value));
 document.querySelector('.tabs button[data-tab="find"]').addEventListener('click', () => openFind(null));

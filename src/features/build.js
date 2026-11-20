@@ -345,7 +345,7 @@ module.exports = function (C) {
     return {
       ok: true, className: info.className, ascendancy: info.ascendancy, level: info.level, mainSkill: info.mainSkill,
       dps: pobVerdict.dpsOf(st, dk), dpsKey: dk, ehp: st.TotalEHP, es: st.EnergyShield, life: st.Life, spirit: st.Spirit, spiritFree: st.SpiritUnreserved,
-      res: Object.keys(C.RES_EL).map((El) => ({ el: El, value: st[`${El}Resist`], total: st[`${El}ResistTotal`] })),
+      res: Object.keys(C.RES_EL).map((El) => ({ el: El, value: st[`${El}Resist`], total: st[`${El}ResistTotal`], max: st[`${El}ResistMax`] })),
       gear: info.gear || {}, overridden: info.equipped || [], mismatch,
       ci: pobVerdict.hasCI(st),
     };
