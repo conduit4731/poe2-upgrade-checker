@@ -129,6 +129,46 @@ button.chip-btn .gs { font-size: 13px; }
 .slot-menu { min-width: 230px; }
 .slot-menu button { font-size: 15px; }
 
+/* ---------- My gear: list view (the default) - the same cards, one row per slot ---------- */
+h3.equip-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.view-switch { margin: 0; font-family: var(--f-text); }
+.view-switch .seg-btn { font-size: 14px; padding: 5px 14px 4px; }
+.slot-grid.as-list { grid-template-columns: minmax(0, 1fr); gap: 0; border-top: 1px solid var(--iron); }
+.as-list .list-head { display: grid; grid-template-columns: 150px 72px minmax(0, 1fr) auto; padding: 0 0 6px; font: 700 14px var(--f-carved); color: var(--bronze-text); border-bottom: 1px solid var(--iron); margin-top: -1px; }
+.as-list .list-head span:first-child { padding-left: 14px; }
+.as-list .slot-card {
+  display: grid; grid-template-columns: 150px 72px minmax(0, 1fr) auto; align-items: center;
+  background: none; border: 0; border-bottom: 1px solid var(--iron); border-left: 3px solid var(--line-normal);
+}
+.as-list .slot-card:hover { background: var(--raise); }
+.as-list .slot-card.r-magic { border-left-color: var(--line-magic); }
+.as-list .slot-card.r-rare { border-left-color: var(--line-rare); }
+.as-list .slot-card.r-unique { border-left-color: var(--line-unique); }
+.as-list .slot-card.is-empty { border-left-color: transparent; border-style: solid; border-top: 0; border-right: 0; }
+.as-list .sc-head { display: contents; }
+.as-list .sc-slot { padding: 10px 8px 10px 11px; font-size: 15px; }
+.as-list .sc-head > :last-child { justify-self: start; }
+.as-list .sc-item { padding: 9px 12px 9px 0; min-width: 0; }
+.as-list .sc-name { display: inline; font-size: 17px; }
+.as-list .sc-base { display: inline; margin-left: 8px; font-size: 14.5px; }
+.as-list .sc-mods { margin: 3px 0 0; padding: 0; border: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.as-list .sc-mods li, .as-list .sc-mods li.more { display: inline; white-space: nowrap; }
+.as-list .sc-mods li + li::before { content: " · "; color: var(--ash); }
+.as-list .slot-card.mods-open .sc-mods { white-space: normal; }
+.as-list .slot-card.mods-open .sc-mods li { white-space: normal; }
+.as-list .sc-allmods { display: none; }
+.as-list .sc-actions { margin: 0; padding: 8px 12px 8px 0; }
+.as-list .sc-actions .slot-btns { width: auto; }
+.as-list .sc-actions .slot-btns > button.primary { flex: none; }
+.as-list .sc-empty { grid-column: 3 / -1; padding: 10px 12px 10px 0; }
+.as-list .slot-out { grid-column: 1 / -1; }
+.as-list .slot-card.wide { grid-column: auto; }
+@media (max-width: 1000px) {
+  .as-list .list-head { display: none; }
+  .as-list .slot-card { grid-template-columns: 110px 60px minmax(0, 1fr); }
+  .as-list .sc-actions { grid-column: 1 / -1; padding: 0 12px 10px 11px; }
+}
+
 /* ---------- My gear: settings and the right column ---------- */
 .ss-label, .ctl-label { font-size: 14.5px; }
 .ss-grid { gap: 10px 18px; }

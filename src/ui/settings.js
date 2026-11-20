@@ -113,6 +113,16 @@ function renderGearSummary() {
   }));
 }
 
+// My gear's equipment as a list (one row per slot, the default) or a grid of cards; kept in this
+// window's storage, as it's only how you like to look at it
+function gearView() {
+  try { return localStorage.getItem('gearView') === 'grid' ? 'grid' : 'list'; } catch (_) { return 'list'; }
+}
+document.querySelectorAll('.view-switch [data-view]').forEach((b) => b.addEventListener('click', () => {
+  try { localStorage.setItem('gearView', b.dataset.view); } catch (_) { /* the default then */ }
+  renderSlots();
+}));
+
 function renderSlots() {
   renderGearSummary();
   const gs = state.gearScores || {};
@@ -129,11 +139,11 @@ function renderSlots() {
     const it = state.equipped[s];
     const g = gs[s];
     if (!it) {
-      return `<div class="slot-card is-empty"><div class="sc-head"><span class="sc-slot">${esc(s)}</span></div>
+      return `<div class="slot-card is-empty"><div class="sc-head"><span class="sc-slot">${esc(s)}</span><span class="sc-note"></span></div>
         <div class="sc-empty">Not saved. In game, hover it, press <b>${esc((state.hotkeyStatus && state.hotkeyStatus.accelerator) || state.settings.hotkey || 'F2')}</b> and click <b>Set as …</b></div></div>`;
     }
     const rar = String(it.rarity || 'normal').toLowerCase();
-    const score = !g ? '' : g.score == null ? `<span class="sc-note">${g.unique ? 'unique' : g.unrated === 'unidentified' ? 'unidentified' : 'not rated'}</span>`
+    const score = !g ? '<span class="sc-note"></span>' : g.score == null ? `<span class="sc-note">${g.unique ? 'unique' : g.unrated === 'unidentified' ? 'unidentified' : 'not rated'}</span>`
       : `<span class="gs g-${esc(g.grade)}" title="Gear score${(g.missing || []).length ? ' · missing: ' + esc(g.missing.join(', ')) : ''}">${g.score}<small>${esc(g.grade)}</small></span>`;
     const mods = (it.lines || []).filter((l) => l.key).map((l) => String(l.text).replace(/\(-?\d+(?:\.\d+)?-\d+(?:\.\d+)?\)/g, ''));
     return `<div class="slot-card r-${esc(rar)}" data-card="${esc(s)}">
@@ -147,11 +157,17 @@ function renderSlots() {
       <div class="slot-out hidden" data-out="${esc(s)}"></div>
     </div>`;
   };
-  $('#slots').innerHTML = `<div class="slot-grid">${main.map(card).join('')}</div>
+  const view = gearView();
+  document.querySelectorAll('.view-switch [data-view]').forEach((b) => { const on = b.dataset.view === view; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  const cls = `slot-grid${view === 'list' ? ' as-list' : ''}`;
+  const head = view === 'list' ? `<div class="list-head"><span>Slot</span><span>${state.game === 'poe1' ? '' : 'Score'}</span><span>Item</span><span></span></div>` : '';
+  $('#slots').innerHTML = `<div class="${cls}">${head}${main.map(card).join('')}</div>
     <button class="link extra-toggle" id="extraToggle">${extraOpen ? '▾' : '▸'} ${state && state.game === 'poe1' ? 'Weapon swap, flasks &amp; jewels' : 'Weapon swap, flasks, charms &amp; jewels'} <span class="dim">(${showExtras.length} saved)</span></button>
-    ${extraOpen ? `<div class="slot-grid extras">${extras.map(card).join('')}</div>` : ''}
+    ${extraOpen ? `<div class="${cls} extras">${extras.map(card).join('')}</div>` : ''}
     <div class="note" id="gearMsg"></div>`;
   $('#extraToggle').addEventListener('click', () => { window.__extraOpen = !extraOpen; renderSlots(); });
+  // list view: click an item's mod line to see all its mods
+  document.querySelectorAll('.as-list .sc-mods').forEach((m) => m.addEventListener('click', () => m.closest('.slot-card').classList.toggle('mods-open')));
   document.querySelectorAll('.sc-allmods').forEach((b) => b.addEventListener('click', () => {
     const c = b.closest('.slot-card'); const open = c.classList.toggle('mods-open');
     b.textContent = open ? 'fewer' : `+${c.querySelectorAll('.sc-mods li.more').length} more`;
