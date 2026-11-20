@@ -2,6 +2,10 @@
 
 ## Unreleased (local fork)
 
+- **Readable on big screens.** The main and results windows now grow with their size (Settings → Popup → *Window text size*: Auto by default, or Normal to Huge). A maximised window on a 1440p screen draws at 1.45×. Text is bigger everywhere (nothing under 13.5 px, help at 15 px) and secondary text is brighter.
+- **A fuller look.** Panels get a header band like the games' own panels, the sidebar is grouped (Gear & trade, Character, Setup) with a clear current page, and controls are taller and easier to hit.
+- **My gear as an equipment grid:** one card per slot, its header tinted by the item's rarity as in game, the item's first mods in mod blue (+N more to see all), and Find upgrades / More at the bottom. Answers open inside the card. The gear score is a summary strip with the weakest slots as buttons.
+
 - **My gear is where you search.** Trade search settings (price, rate, sellers, league, level, corrupted, ignored stats) moved to the top of My gear. Each slot has **Find upgrades** (weighted by your build) and a **More** menu: same stats or better, craftable bases, best uniques, what's it worth, Custom search. Results show under that slot.
 - **Find upgrades page renamed Custom search**, and it only does custom searches now. A notice says it isn't weighted by your build or guide, a line shows which trade settings it uses, and "Start from" groups your gear and copied items.
 - **Calmer right column on My gear:** short help with the details folded away, the build's numbers in a grid with resistance chips, several PoB warnings folded into one line, priorities as an aligned list, resistances in a grid.

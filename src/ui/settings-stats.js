@@ -179,8 +179,8 @@ $('#suggestBtn').addEventListener('click', async () => {
 
 
 // ---------- popup / display options ----------
-['popupPosition', 'uiScale', 'popupDetail'].forEach((k) => $('#' + k).addEventListener('change', async () => {
-  const v = k === 'uiScale' ? Number($('#' + k).value) : $('#' + k).value;
+['popupPosition', 'uiScale', 'popupDetail', 'appScale'].forEach((k) => $('#' + k).addEventListener('change', async () => {
+  const v = k === 'uiScale' || (k === 'appScale' && $('#' + k).value !== 'auto') ? Number($('#' + k).value) : $('#' + k).value;
   await window.api.setSetting(k, v);
   if (k === 'popupPosition') window.api.testPopup();
 }));

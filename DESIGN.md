@@ -28,6 +28,7 @@ Popup headers are tinted by rarity: rare `#3a3216`, unique `#3a2412`, magic `#23
 - **Headings: Alegreya Sans SC** (bundled, SIL OFL): real small caps for headings, item names, verdicts, buttons, navigation and table headers. No letter-spacing and no all-caps transforms.
 - **Text: Alegreya Sans** (bundled, SIL OFL): everything you read. 15 px base, help text 14 px, nothing under 13 px except short tags (12 px). No italics for emphasis: use bold or colour.
 - Prices and big numbers are bold Alegreya Sans, so "ex", "div" and "chaos" stay readable.
+- The main and results windows zoom with their width (`src/core/appzoom.js`, 1× up to 1500 px, up to 1.45×), and `css/overhaul.css` sets their type: 16 px base, help 15 px, nothing under 13.5 px.
 - Fontin, the PoE1 font, isn't bundled: its licence doesn't allow passing it on without the author's permission.
 
 ## Shapes

@@ -45,6 +45,7 @@ async function load() {
   if (document.activeElement !== $('#findStatus')) $('#findStatus').value = state.settings.status || 'available';
   $('#popupPosition').value = state.settings.popupPosition || 'cursor';
   $('#uiScale').value = String(state.settings.uiScale || 1);
+  $('#appScale').value = String(state.settings.appScale == null ? 'auto' : state.settings.appScale);
   $('#popupDetail').value = state.settings.popupDetail || 'compact';
   $('#colorblind').checked = !!state.settings.colorblind;
   document.body.classList.toggle('cb', !!state.settings.colorblind);
@@ -102,9 +103,10 @@ function renderGearSummary() {
   const grade = avg >= 85 ? 'S' : avg >= 70 ? 'A' : avg >= 55 ? 'B' : avg >= 40 ? 'C' : 'D';
   const weakest = rated.slice().sort((a, b) => a[1].score - b[1].score).slice(0, 3);
   const build = state.buildNow;
-  $('#gearSummary').innerHTML = `<div class="gear"><span class="gs g-${grade}">${avg} ${grade}</span> <b>Overall gear score</b> <span class="dim">for ${esc(build && build.name ? build.name : 'your build')}${state.pobOn ? ' – a rough guide; verdicts come from Path of Building' : ''}</span></div>
-    <div>Upgrade first: ${weakest.map(([slot, g]) => `<button class="link" data-quick2="${esc(slot)}">${esc(slot)} (${g.score})</button>`).join(' · ')}
-    <span class="note" id="gearSumMsg"></span></div>`;
+  $('#gearSummary').innerHTML = `<div class="gsum">
+      <div class="gsum-score"><span class="gs big g-${grade}">${avg}<small>${grade}</small></span><div><b>Overall gear score</b><div class="dim small">for ${esc(build && build.name ? build.name : 'your build')}${state.pobOn ? ' · a rough guide, verdicts come from Path of Building' : ''}</div></div></div>
+      <div class="gsum-weak"><span class="gsum-k">Weakest slots</span>${weakest.map(([slot, g]) => `<button class="chip-btn" data-quick2="${esc(slot)}" title="Find upgrades for ${esc(slot)}"><span>${esc(slot)}</span><span class="gs g-${esc(g.grade)}">${g.score}</span></button>`).join('')}</div>
+    </div><div class="note" id="gearSumMsg"></div>`;
   document.querySelectorAll('[data-quick2]').forEach((b) => b.addEventListener('click', async () => {
     $('#gearSumMsg').textContent = ` Searching upgrades for ${b.dataset.quick2}…`;
     window.showSearchResult($('#gearSumMsg'), await window.api.quickFind(b.dataset.quick2, 'upgrade').catch((err) => ({ ok: false, error: (err && err.message) || String(err) })));
@@ -121,22 +123,39 @@ function renderSlots() {
   const extras = state.slots.filter((s) => !main.includes(s)).filter((s) => { const m = /^Jewel (\d+)$/.exec(s); return !m || Number(m[1]) <= Math.max(6, lastJewel + 1); });
   const showExtras = extras.filter((s) => state.equipped[s]);
   const extraOpen = window.__extraOpen != null ? window.__extraOpen : showExtras.length > 0;
-  const row = (s) => {
+  // one card per slot: the slot and its score, the item in its rarity colour with its first mods, the searches
+  const MODS = 3;
+  const card = (s) => {
     const it = state.equipped[s];
     const g = gs[s];
-    const gcell = !it ? '' : !g ? '' : g.score == null ? `<span class="dim">${g.unique ? 'unique' : g.unrated === 'unidentified' ? 'unidentified' : 'not rated'}</span>`
-      : `<span class="gs g-${esc(g.grade)}" title="${esc((g.missing || []).length ? 'Missing: ' + g.missing.join(', ') : '')}">${g.score} ${esc(g.grade)}</span>`;
-    return `<tr class="slotrow"><td>${esc(s)}</td><td>${gcell}</td>
-      <td class="item-cell">${it ? `<b class="rar-${esc(String(it.rarity || '').toLowerCase())}">${esc(it.name)}</b> <span class="dim">${esc(it.baseType !== it.name ? it.baseType : '')}</span>${it.fromPob ? ' <span class="dim small">· from PoB</span>' : ''}<div class="dim mods-line" title="${esc(summary(it))}">${esc(summary(it).replace(/\(-?\d+(?:\.\d+)?-\d+(?:\.\d+)?\)/g, ''))}</div>`
-        : '<span class="empty">not set</span>'}</td>
-      <td class="slot-actions">${it ? slotActions(s, it) : ''}</td></tr>
-      <tr class="slot-out hidden" data-out="${esc(s)}"><td colspan="4"></td></tr>`;
+    if (!it) {
+      return `<div class="slot-card is-empty"><div class="sc-head"><span class="sc-slot">${esc(s)}</span></div>
+        <div class="sc-empty">Not saved. In game, hover it, press <b>${esc((state.hotkeyStatus && state.hotkeyStatus.accelerator) || state.settings.hotkey || 'F2')}</b> and click <b>Set as …</b></div></div>`;
+    }
+    const rar = String(it.rarity || 'normal').toLowerCase();
+    const score = !g ? '' : g.score == null ? `<span class="sc-note">${g.unique ? 'unique' : g.unrated === 'unidentified' ? 'unidentified' : 'not rated'}</span>`
+      : `<span class="gs g-${esc(g.grade)}" title="Gear score${(g.missing || []).length ? ' · missing: ' + esc(g.missing.join(', ')) : ''}">${g.score}<small>${esc(g.grade)}</small></span>`;
+    const mods = (it.lines || []).filter((l) => l.key).map((l) => String(l.text).replace(/\(-?\d+(?:\.\d+)?-\d+(?:\.\d+)?\)/g, ''));
+    return `<div class="slot-card r-${esc(rar)}" data-card="${esc(s)}">
+      <div class="sc-head"><span class="sc-slot">${esc(s)}</span>${score}</div>
+      <div class="sc-item">
+        <div class="sc-name rar-${esc(rar)}">${esc(it.name)}</div>
+        <div class="sc-base">${esc(it.baseType !== it.name ? it.baseType : it.itemClass || '')}${it.fromPob ? ' <span class="sc-tag">from PoB</span>' : ''}</div>
+        ${mods.length ? `<ul class="sc-mods">${mods.map((m, i) => `<li${i >= MODS ? ' class="more"' : ''}>${esc(m)}</li>`).join('')}</ul>${mods.length > MODS ? `<button class="link sc-allmods">+${mods.length - MODS} more</button>` : ''}` : ''}
+      </div>
+      <div class="sc-actions">${slotActions(s, it)}</div>
+      <div class="slot-out hidden" data-out="${esc(s)}"></div>
+    </div>`;
   };
-  $('#slots').innerHTML = `<tr><th>Slot</th><th>${state.game === 'poe1' ? '' : 'Gear score'}</th><th>Item</th><th></th></tr>` + main.map(row).join('')
-    + `<tr><td colspan="4"><button class="link" id="extraToggle">${extraOpen ? '▾' : '▸'} ${state && state.game === 'poe1' ? 'Weapon swap, flasks &amp; jewels' : 'Weapon swap, flasks, charms &amp; jewels'} (${showExtras.length} saved)</button></td></tr>`
-    + (extraOpen ? extras.map(row).join('') : '')
-    + '<tr><td colspan="4" class="note" id="gearMsg"></td></tr>';
+  $('#slots').innerHTML = `<div class="slot-grid">${main.map(card).join('')}</div>
+    <button class="link extra-toggle" id="extraToggle">${extraOpen ? '▾' : '▸'} ${state && state.game === 'poe1' ? 'Weapon swap, flasks &amp; jewels' : 'Weapon swap, flasks, charms &amp; jewels'} <span class="dim">(${showExtras.length} saved)</span></button>
+    ${extraOpen ? `<div class="slot-grid extras">${extras.map(card).join('')}</div>` : ''}
+    <div class="note" id="gearMsg"></div>`;
   $('#extraToggle').addEventListener('click', () => { window.__extraOpen = !extraOpen; renderSlots(); });
+  document.querySelectorAll('.sc-allmods').forEach((b) => b.addEventListener('click', () => {
+    const c = b.closest('.slot-card'); const open = c.classList.toggle('mods-open');
+    b.textContent = open ? 'fewer' : `+${c.querySelectorAll('.sc-mods li.more').length} more`;
+  }));
   bindSlotActions();
 }
 
@@ -159,12 +178,14 @@ function slotActions(s, it) {
   return `<div class="slot-btns">${gear ? `<button class="primary" data-act="upgrade" data-slot="${e}" title="${state.pobOn ? 'Path of Building weights the search by what each stat does to your build, then checks every listing in your build' : 'Listings that score higher for your build (gear score)'}">Find upgrades</button>` : ''}
     <details class="slot-more"><summary title="More searches for this slot">More</summary><div class="slot-menu">${items}</div></details></div>`;
 }
-function slotOut(slot) {
-  const tr = document.querySelector(`.slot-out[data-out="${CSS.escape(slot)}"]`);
-  document.querySelectorAll('.slot-out').forEach((x) => { if (x !== tr) { x.classList.add('hidden'); x.firstElementChild.innerHTML = ''; } });
-  if (!tr) return null;
-  tr.classList.remove('hidden');
-  return tr.firstElementChild;
+// a slot's answer shows inside its card; a card with an answer spans the whole row
+function slotOut(slot, wide) {
+  const box = document.querySelector(`.slot-out[data-out="${CSS.escape(slot)}"]`);
+  document.querySelectorAll('.slot-out').forEach((x) => { if (x !== box) { x.classList.add('hidden'); x.innerHTML = ''; const c = x.closest('.slot-card'); if (c) c.classList.remove('wide'); } });
+  if (!box) return null;
+  box.classList.remove('hidden');
+  const c = box.closest('.slot-card'); if (c) c.classList.toggle('wide', !!wide);
+  return box;
 }
 function searchExtraGear() {
   return { league: ($('#findLeague') && $('#findLeague').value) || undefined, status: $('#findStatus').value };
@@ -177,7 +198,7 @@ async function runSlotAction(act, slot, btn) {
     await window.api.clearSlot(slot); load(); return;
   }
   if (slotBusy) return;
-  const out = slotOut(slot);
+  const out = slotOut(slot, act === 'uniques' || act === 'price');
   if (!out) return;
   if (act === 'uniques') { window.showBestUniques(slot, out); return; }
   const label = { upgrade: 'Find upgrades', similar: 'Same stats or better', weights: 'By my weights', craft: 'Craftable bases', price: "What's it worth?" }[act];
@@ -196,8 +217,6 @@ async function runSlotAction(act, slot, btn) {
   window.showSearchResult(msg, res);
 }
 function bindSlotActions() {
-  // the full mods of an item: click its line
-  document.querySelectorAll('.mods-line').forEach((m) => m.addEventListener('click', () => m.classList.toggle('open')));
   document.querySelectorAll('#slots [data-act]').forEach((b) => b.addEventListener('click', () => {
     const menu = b.closest('details'); if (menu && b.dataset.act !== 'clear') menu.open = false;
     runSlotAction(b.dataset.act, b.dataset.slot, b);

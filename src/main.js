@@ -249,6 +249,7 @@ const C = {
   get tradePage() { return M.search.tradePage; },
   get UA() { return M.search.UA; },
   get uiScale() { return M.popup.uiScale; },
+  get applyAppZoom() { return applyAppZoom; },
   get updates() { return updates; },
   get usage() { return usage; },
   get watchBuildFile() { return M.build.watchBuildFile; },
@@ -327,6 +328,27 @@ function applyLinuxAutostart() {
 
 // ---------- settings window & tray ----------
 
+// The main and results windows draw bigger as they get wider ("Text size: Auto", the default), or at
+// the size picked in Settings → Popup & windows. The results window never goes below the popup size.
+const { appZoom } = require('./core/appzoom');
+function applyAppZoom(win) {
+  const wins = win ? [win] : [settingsWin, C.resultsWin];
+  for (const w of wins) {
+    try {
+      if (!w || w.isDestroyed()) continue;
+      let z = appZoom(store.settings.appScale, w.getContentBounds().width);
+      if (w !== settingsWin && (store.settings.appScale == null || store.settings.appScale === 'auto')) z = Math.max(z, C.uiScale());
+      if (Math.abs(w.webContents.getZoomFactor() - z) > 0.005) w.webContents.setZoomFactor(z);
+    } catch (_) { /* ignore */ }
+  }
+}
+function followZoom(win) {
+  let zt = null;
+  const again = () => { clearTimeout(zt); zt = setTimeout(() => applyAppZoom(win), 120); };
+  win.on('resize', again); win.on('maximize', again); win.on('unmaximize', again);
+  win.webContents.on('did-finish-load', () => applyAppZoom(win));
+}
+
 function openSettings() {
   if (settingsWin && !settingsWin.isDestroyed()) { settingsWin.show(); settingsWin.focus(); return; }
   // reopen where you left it (e.g. maximized on your second monitor)
@@ -353,6 +375,7 @@ function openSettings() {
     }, 400);
   };
   settingsWin.on('move', remember); settingsWin.on('resize', remember); settingsWin.on('maximize', remember); settingsWin.on('unmaximize', remember);
+  followZoom(settingsWin);
   settingsWin.loadFile(path.join(__dirname, 'ui', 'settings.html'));
 }
 

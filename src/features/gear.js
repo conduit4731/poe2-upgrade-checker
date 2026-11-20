@@ -154,7 +154,7 @@ module.exports = function (C) {
     if (key === 'autoUpdate' && C.updates.updater()) C.updates.updater().autoDownload = value !== false;
     if (key === 'betaUpdates') C.updates.setBetas();
     if ((key === 'wizardDone' || key === 'usageStats') && value) setTimeout(() => C.usage.send(), 5000);
-    if (key === 'uiScale') { [C.settingsWin, C.resultsWin].forEach((w) => { try { if (w && !w.isDestroyed()) w.webContents.setZoomFactor(C.uiScale()); } catch (_) { /* ignore */ } }); }
+    if (key === 'uiScale' || key === 'appScale') C.applyAppZoom();
     C.buildTrayMenu();
     return true;
   });

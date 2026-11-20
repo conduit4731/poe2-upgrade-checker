@@ -36,7 +36,7 @@
     bind();
     const more = box.querySelector('.uniq-more');
     if (more) more.addEventListener('click', () => { box.querySelector('table.uniques').insertAdjacentHTML('beforeend', list.slice(SHOW).map(row).join('')); more.remove(); bind(); });
-    box.querySelector('.uniq-close').addEventListener('click', () => { const tr = card.closest('tr'); card.innerHTML = ''; if (tr) tr.classList.add('hidden'); });
+    box.querySelector('.uniq-close').addEventListener('click', () => { const sc = card.closest('.slot-card'); card.innerHTML = ''; card.classList.add('hidden'); if (sc) sc.classList.remove('wide'); });
   }
   window.showBestUniques = show;
 }());

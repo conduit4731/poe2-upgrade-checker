@@ -102,6 +102,10 @@ module.exports = function (C) {
     const remember = () => { clearTimeout(t); t = setTimeout(() => { if (resultsWin && !resultsWin.isDestroyed()) C.store.setSetting('resultsBounds', resultsWin.getBounds()); }, 500); };
     resultsWin.on('move', remember); resultsWin.on('resize', remember);
     try { resultsWin.webContents.setZoomFactor(C.uiScale()); } catch (_) { /* ignore */ }
+    // bigger as the window gets wider (or the size picked in Settings), never below the popup's size
+    let zt = null;
+    const zoom = () => { clearTimeout(zt); zt = setTimeout(() => C.applyAppZoom(resultsWin), 120); };
+    resultsWin.on('resize', zoom); resultsWin.webContents.on('did-finish-load', zoom);
   }
 
   function scoreListing(s) {

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/polish.css">
   <link rel="stylesheet" href="css/native.css">
   <link rel="stylesheet" href="css/route.css">
+  <link rel="stylesheet" href="css/overhaul.css">
 </head>
 <body class="app">
   <aside class="side">
@@ -30,13 +31,16 @@
       <select id="profileSel"></select>
     </div>
     <nav class="tabs side-nav" aria-label="Pages">
+      <span class="nav-group">Gear &amp; trade</span>
       <button data-tab="gear" class="active" aria-current="page"><i data-icon="sword"></i>My gear</button>
-      <button data-tab="char"><i data-icon="user"></i>Character</button>
       <button data-tab="spend"><i data-icon="coins"></i>Where to spend</button>
       <button data-tab="find"><i data-icon="search"></i>Custom search</button>
-      <button data-tab="route"><i data-icon="flag"></i>League start</button>
-      <button data-tab="build"><i data-icon="sliders"></i>Build &amp; stats</button>
       <button data-tab="test"><i data-icon="clipboard"></i>Check an item</button>
+      <span class="nav-group">Character</span>
+      <button data-tab="char"><i data-icon="user"></i>Character</button>
+      <button data-tab="route"><i data-icon="flag"></i>League start</button>
+      <span class="nav-group">Setup</span>
+      <button data-tab="build"><i data-icon="sliders"></i>Build &amp; stats</button>
       <button data-tab="options"><i data-icon="settings"></i>Settings</button>
     </nav>
     <div class="side-foot" id="hotkeyLine">Hover an item in game and press <b>F2</b>.</div>
@@ -112,11 +116,12 @@
               </div>
             </details>
           </div>
-          <div class="card-p">
           <div id="setupBox" class="setup"></div>
-          <div id="gearSummary" class="gear-summary"></div>
-          <table class="list" id="slots"></table>
-          <div class="help slot-legend"><b>Find upgrades</b>: weighted by your build (Path of Building), every listing checked in your build. <b>More</b>: same stats or better, craftable bases, best uniques, price check, or a Custom search started from that item.</div>
+          <div class="card-p equip-card">
+            <h3>Equipment</h3>
+            <div id="gearSummary" class="gear-summary"></div>
+            <div id="slots"></div>
+            <div class="help slot-legend"><b>Find upgrades</b> searches by what each stat is worth to your build, then checks every listing in your build. <b>More</b> has same stats or better, craftable bases, best uniques, a price check and Custom search.</div>
           </div>
         </div>
         <div class="col side-col">
@@ -421,12 +426,17 @@
             <option value="compact">Compact (More &#9662; for the rest)</option>
             <option value="full">Always show everything</option>
           </select></span><span></span>
-          <span class="k">Size</span>
+          <span class="k">Popup size</span>
           <span class="v"><select id="uiScale">
             <option value="0.9">Small</option><option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option>
           </select></span><span></span>
+          <span class="k">Window text size</span>
+          <span class="v"><select id="appScale" title="This window and the results window">
+            <option value="auto">Auto: grows with the window</option>
+            <option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option><option value="1.5">Huge</option>
+          </select></span><span></span>
         </div>
-        <div class="help">Drag the popup by its name to move it. It stays open while your mouse is over it. Size applies to every window.</div>
+        <div class="help">Drag the popup by its name to move it. It stays open while your mouse is over it. <b>Auto</b> makes this window's text bigger as the window gets bigger, so a maximised window on a 1440p or 4K screen stays readable.</div>
         <div class="row"><label><input type="checkbox" id="colorblind"> Colour-blind friendly colours (blue = better, orange = worse)</label></div>
         <div class="row"><label><input type="checkbox" id="paused"> Pause (ignore the hotkeys and the clipboard)</label></div>
       </div>
