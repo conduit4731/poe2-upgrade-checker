@@ -154,7 +154,7 @@ module.exports = function (C) {
     }
     // Path of Building when your build is loaded; otherwise (PoE2) the gear score
     const mode = C.pobOn() ? 'pob' : C.gearScoreOn() ? 'gear' : null;
-    if (!mode) return { ok: false, error: C.tg() === 'poe1' ? 'Load your Path of Building build on My gear first: PoE1 items are judged by Path of Building.' : 'Load your Path of Building build on My gear, or pick a build for the gear score (Build & stats), first.' };
+    if (!mode) return { ok: false, error: C.tg() === 'poe1' ? 'Load your Path of Building build on the Character page first: PoE1 items are judged by Path of Building.' : 'Load your Path of Building build on the Character page, or pick a build for the gear score (Build & stats), first.' };
     spendBusy = true;
     const game = C.tg(); const key = runKey();
     try {

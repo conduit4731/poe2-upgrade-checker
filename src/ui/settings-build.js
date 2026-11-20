@@ -4,17 +4,20 @@
 // resistances.
 
 // ---------- Path of Building ----------
+let importOpen = false; // "Load another build…" opened the import box
+const refreshChar = () => { const b = document.querySelector('.tabs button[data-tab="char"]'); if (b && b.classList.contains('active')) b.click(); };
+$('#pobChangeBtn').addEventListener('click', () => { importOpen = !importOpen; renderPob(false); if (importOpen) $('#pobInput').focus(); });
 $('#pobImport').addEventListener('click', async () => {
   $('#pobMsg').textContent = 'Importing…';
   const r = await window.api.importPob($('#pobInput').value.trim());
   $('#pobMsg').textContent = r.ok ? r.message : r.error;
-  if (r.ok) { $('#pobInput').value = ''; await load(); renderPob(false); }
+  if (r.ok) { $('#pobInput').value = ''; importOpen = false; await load(); renderPob(false); refreshChar(); }
 });
 $('#pobLinkFile').addEventListener('click', async () => {
   $('#pobMsg').textContent = 'Pick your build file…';
   const r = await window.api.linkPobFile();
   $('#pobMsg').textContent = r.canceled ? '' : r.ok ? r.message : r.error;
-  if (r.ok) { await load(); renderPob(false); }
+  if (r.ok) { importOpen = false; await load(); renderPob(false); refreshChar(); }
 });
 // the linked build (pobb.in or a PoB file): read it again, or stop following it
 // what you've typed in the skills table but not applied yet: the page redraws whenever a setting
@@ -69,13 +72,13 @@ async function renderPobSource() {
     $('#pobMsg').textContent = 'Building that stage…';
     const r = await window.api.setPobStage(stg.value === 'level' ? 'level' : Number(stg.value));
     $('#pobMsg').textContent = r.ok ? r.message : r.error;
-    if (r.ok) { await load(); renderPob(false); } else renderPobSource();
+    if (r.ok) { await load(); renderPob(false); refreshChar(); } else renderPobSource();
   });
   $('#pobSyncNow').addEventListener('click', async () => {
     $('#pobMsg').textContent = 'Reading your build again…';
     const r = await window.api.syncPob();
     $('#pobMsg').textContent = r.ok ? r.message : r.error;
-    if (r.ok && !r.same) { await load(); renderPob(false); } else renderPobSource();
+    if (r.ok && !r.same) { await load(); renderPob(false); refreshChar(); } else renderPobSource();
   });
   $('#pobUnlink').addEventListener('click', async () => { await window.api.unlinkPob(); $('#pobMsg').textContent = 'Unlinked: your build stays as it is.'; renderPobSource(); });
 }
@@ -125,7 +128,7 @@ function bindGuideSkills(src) {
     $('#gskMsg').textContent = 'Building it with your skills…';
     const r = await window.api.setGuideSkills({ level: mode === 'n' ? $('#gskLevelN').value : mode, quality: $('#gskQ').value, gems, main, full });
     $('#pobMsg').textContent = r.ok ? r.message : r.error;
-    if (r.ok) { box.dataset.dirty = '0'; await load(); renderPob(false); } else $('#gskMsg').textContent = r.error;
+    if (r.ok) { box.dataset.dirty = '0'; await load(); renderPob(false); refreshChar(); } else $('#gskMsg').textContent = r.error;
   });
   $('#gskCompare').addEventListener('click', async () => {
     $('#gskMsg').textContent = 'Path of Building is trying each skill as the main one…';
@@ -151,11 +154,16 @@ async function renderPob(load) {
   $('#pobBalance').value = Math.round((1 - (state.settings.pobDamageWeight == null ? 0.6 : state.settings.pobDamageWeight)) * 100);
   const st = await window.api.pobStatus(!!load);
   $('#pobControls').classList.toggle('hidden', !(st.available && st.hasBuild));
+  // the import box: always there without a build; with one, behind "Load another build…"
+  $('#pobNone').classList.toggle('hidden', !!st.hasBuild);
+  $('#pobChangeBtn').classList.toggle('hidden', !st.hasBuild);
+  $('#pobImportRow').classList.toggle('hidden', !!st.hasBuild && !importOpen);
+  $('#pobChangeBtn').textContent = importOpen ? 'Cancel' : 'Load another build…';
   // a loaded build that's switched off: easy to miss, and every verdict and search is the rough gear score then
   $('#pobOffNote').classList.toggle('hidden', !(st.available && st.hasBuild && !st.enabled));
   const p1s = state && state.game === 'poe1';
   if (!st.available) { el.innerHTML = `<div class="note">The Path of Building engine${p1s ? ' for PoE1' : ''} isn't included in this copy of the app – ${p1s ? "PoE1 items can't be judged without it. Reinstall the app or run test-build.bat again." : 'items are judged by the gear score instead.'}</div>`; return; }
-  if (!st.hasBuild) { el.innerHTML = '<div class="note">No build yet: paste your PoB export above so items are judged by Path of Building.</div>'; return; }
+  if (!st.hasBuild) { el.innerHTML = '<div class="note">Paste your Path of Building export or pobb.in link above (or link a guide\'s .build file) so items are judged with your build.</div>'; return; }
   if (!st.enabled) { el.innerHTML = `<div class="dim">Turned off – ${p1s ? "PoE1 items aren't judged while it's off." : 'items are judged by the gear score.'}</div>`; return; }
   if (st.error) { el.innerHTML = `<div class="note">Path of Building: ${esc(st.error)}</div>`; return; }
   const m = st.summary;
@@ -164,24 +172,10 @@ async function renderPob(load) {
     if (!window.__pobAutoLoad) { window.__pobAutoLoad = true; el.innerHTML = '<div class="dim"><span class="spinner"></span> Starting Path of Building…</div>'; renderPob(true); return; }
     el.innerHTML = '<div class="dim">Build saved. Path of Building starts the first time an item is checked. <button class="link" id="pobLoad">Check it now</button></div>'; const b = $('#pobLoad'); if (b) b.addEventListener('click', () => { el.innerHTML = '<div class="dim"><span class="spinner"></span> Starting Path of Building…</div>'; renderPob(true); }); return;
   }
-  const resCells = (m.res || []).filter((r) => r.value != null && !(m.ci && r.el === 'Chaos')).map((r) => {
-    const max = Number(r.max) || 75;
-    return `<span class="res-chip ${Math.round(r.value) >= max ? 'ok' : 'under'}" title="${esc(r.el)} resistance${r.total > r.value ? `: ${Math.round(r.total)} uncapped` : ''}">${esc(r.el)} <b>${Math.round(r.value)}%</b></span>`;
-  }).join('');
   $('#prChaos').disabled = !!m.ci || !$('#prRes').checked;
   if (m.ci) { $('#prChaos').checked = false; $('#prChaos').parentNode.title = 'Chaos Inoculation: you are immune to chaos damage, so chaos resistance is ignored'; }
-  const stat = (k, v, sub) => `<div class="pst"><span class="pst-k">${k}</span><b>${v}</b>${sub ? `<span class="pst-sub">${sub}</span>` : ''}</div>`;
-  el.innerHTML = `<div class="pob-head"><span class="pob-tag">PoB</span> <b>${esc(m.ascendancy || m.className || '')}</b> <span class="dim">level ${esc(m.level)}</span>${m.ci ? ' <span class="dim" title="Life is 1 in your build: chaos resistance is ignored everywhere">· Chaos Inoculation</span>' : ''}</div>
-    ${m.mainSkill ? `<div class="pob-skill"><span class="dim">Judged on</span> <b>${esc(m.mainSkill)}</b></div>` : ''}
-    <div class="pob-stats">
-      ${stat(m.dpsKey === 'MinionDPS' ? 'Minion DPS' : 'DPS', kfmt(m.dps))}
-      ${stat('Effective HP', kfmt(m.ehp))}
-      ${stat('Energy Shield', kfmt(m.es))}
-      ${m.spirit == null ? '' : stat('Spirit free', m.spiritFree == null ? '–' : Math.round(m.spiritFree), `of ${Math.round(m.spirit)}`)}
-    </div>
-    ${resCells ? `<div class="res-chips">${resCells}</div>` : ''}
-    ${m.overridden && m.overridden.length ? `<div class="dim small pob-over">Your in-game items replace PoB's in: ${esc(m.overridden.join(', '))}</div>` : ''}
-    ${m.mismatch.length === 1 ? `<div class="note">${window.ICON.warn} ${esc(m.mismatch[0])}</div>`
+  // the numbers (damage, life, resistances) are on this page's character sheet: here only what to check
+  el.innerHTML = `${m.mismatch.length === 1 ? `<div class="note">${window.ICON.warn} ${esc(m.mismatch[0])}</div>`
     : m.mismatch.length ? `<details class="pob-warn"><summary>${window.ICON.warn} ${m.mismatch.length} things to check in Path of Building</summary>${m.mismatch.map((x) => `<div class="note">${esc(x)}</div>`).join('')}</details>` : ''}`;
 }
 // what "Better for my build" does depends on the build: PoB judges, or the gear score, or off
@@ -217,8 +211,8 @@ function renderPriorities() {
   state.priorities = await window.api.setPriorities({ resFirst: $('#prRes').checked, chaos: $('#prChaos').checked, keepDmg: $('#prDmg').checked, spirit: $('#prSpirit').checked, attrs: $('#prAttrs').checked, speed: $('#prSpeed').checked });
   renderPriorities();
 }));
-$('#pobUse').addEventListener('change', async () => { await window.api.pobEnable($('#pobUse').checked); state = await window.api.getState(); renderPob(false); renderSlots(); });
-$('#pobTurnOn').addEventListener('click', async () => { $('#pobUse').checked = true; await window.api.pobEnable(true); state = await window.api.getState(); renderPob(false); renderSlots(); });
+$('#pobUse').addEventListener('change', async () => { await window.api.pobEnable($('#pobUse').checked); state = await window.api.getState(); renderPob(false); renderSlots(); refreshChar(); });
+$('#pobTurnOn').addEventListener('click', async () => { $('#pobUse').checked = true; await window.api.pobEnable(true); state = await window.api.getState(); renderPob(false); renderSlots(); refreshChar(); });
 $('#pobBalance').addEventListener('change', async () => { await window.api.setSetting('pobDamageWeight', 1 - Number($('#pobBalance').value) / 100); state = await window.api.getState(); });
 
 

@@ -64,7 +64,7 @@ const WIZ = [
     title: 'Your build',
     body: () => (state.pobOn ? `<p class="ok-line">✓ Your Path of Building build is loaded for this character, so every item is judged with it.</p><p class="help">To use another build, paste its export or pobb.in link:</p>` : '') + `<p${state.pobOn ? ' class="hidden"' : ''}><b>Best:</b> paste your <b>Path of Building</b> export (in Path of Building: Import/Export Build → Generate; Path of Building 2 for PoE2, Path of Building Community for PoE1) or a pobb.in link. The app then judges every item with Path of Building's own calculations for <b>your</b> build – any class, any skill – and loads your gear.</p>
       <div class="row"><input id="wizPob" class="grow" placeholder="https://pobb.in/…  or  eNrt…"><button id="wizPobBtn" class="primary gilded">Import</button></div><div class="note" id="wizPobMsg"></div>
-      ${state.pobOn ? '' : state.game === 'poe1' ? '<p class="help">Path of Exile 1 items are judged by Path of Building only, so this step is what makes the popup work. You can also do it later on <b>My gear</b>.</p>'
+      ${state.pobOn ? '' : state.game === 'poe1' ? '<p class="help">Path of Exile 1 items are judged by Path of Building only, so this step is what makes the popup work. You can also do it later on the <b>Character</b> page.</p>'
     : `<p class="help">No PoB? Pick the closest profile for a rough gear score instead, and save your gear in the next steps:</p>
       <div id="wizPicker"></div>
       <p class="help">Following a league starter or a guide? Paste its pobb.in link or Path of Building code above instead: every item is then judged with that exact build.</p>`}`,

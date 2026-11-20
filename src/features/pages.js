@@ -33,7 +33,7 @@ module.exports = function (C) {
   // PoE1: how many hits of each Path of Building boss preset your character takes (Pinnacle and Uber)
   ipcMain.handle('pob:bosscheck', async () => {
     if (C.tg() !== 'poe1') return { ok: false, error: 'The boss check is for Path of Exile 1.' };
-    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on My gear first.' };
+    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on the Character page first.' };
     try {
       await C.pobEngine().ensureLoaded();
       const r = await C.pobEngine().bossCheck({});
@@ -42,7 +42,7 @@ module.exports = function (C) {
   });
   // the best notables to anoint (PoE1, with oils) or instil (PoE2, with distilled emotions) on your amulet
   ipcMain.handle('pob:anoints', async () => {
-    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on My gear first.' };
+    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on the Character page first.' };
     try {
       await C.pobEngine().ensureLoaded();
       const r = await C.pobEngine().anointCheck({});
@@ -121,7 +121,7 @@ module.exports = function (C) {
     if (!item) return { ok: false, reason: 'That doesn\'t look like Path of Exile item text. In game, hover an item and press Ctrl+C.' };
     // an item from the other game is judged against that game's character, as F2 would
     const ig = gamesLib.gameFromItemText(text);
-    if (ig && ig !== C.store.activeGame() && !C.store.profileForGame(ig)) return { ok: false, reason: `That's a ${C.G(ig).name} item, and you have no ${C.G(ig).short} character yet. Press F2 on an item in ${C.G(ig).short}, or import a ${C.G(ig).short} build on My gear, to make one.` };
+    if (ig && ig !== C.store.activeGame() && !C.store.profileForGame(ig)) return { ok: false, reason: `That's a ${C.G(ig).name} item, and you have no ${C.G(ig).short} character yet. Press F2 on an item in ${C.G(ig).short}, or import a ${C.G(ig).short} build on the Character page, to make one.` };
     if (ig && ig !== C.store.activeGame()) { C.store.switchProfile(C.store.profileForGame(ig)); C.popupItem = null; C.gameChanged(); }
     C.store.noteStats(item);
     C.remember(item);

@@ -12,7 +12,7 @@ module.exports = function (C) {
   C.runePicks = () => { const l = last.get(C.store.data.activeProfile); return l && l.r && l.r.ok ? [...new Set(l.r.ranked.filter((x) => x.best).map((x) => x.best.rune))] : []; };
   ipcMain.handle('pob:runes', async (_e, opts) => {
     if (C.tg() !== 'poe2') return { ok: false, error: 'Runes and soul cores are a Path of Exile 2 thing.' };
-    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on My gear first.' };
+    if (!C.pobOn()) return { ok: false, error: 'Add your Path of Building build on the Character page first.' };
     const key = C.store.data.activeProfile;
     const gen = C.pobSheetGen();
     if (!(opts && opts.refresh) && last.has(key) && last.get(key).gen === gen) return last.get(key).r;

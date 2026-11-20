@@ -19,7 +19,7 @@
         ${opts.closable ? '<button class="x" id="closeBtn" title="Close">×</button>' : ''}
         <div class="verdict ${vc}"><span class="badge">${vt}</span>${c.all ? `<span class="dim">for your build: ${R.esc(c.all.text)}</span>` : ''}</div>
         ${r.pending ? '<div class="note"><span class="spinner"></span> Checking the mods with Path of Building…</div>' : ''}
-        ${r.noBuild ? '<div class="dim small">Load your Path of Building build on My gear and each mod is worked out for your character.</div>' : ''}
+        ${r.noBuild ? '<div class="dim small">Load your Path of Building build on the Character page and each mod is worked out for your character.</div>' : ''}
         ${r.pobError ? `<div class="note">${R.esc(r.pobError)}</div>` : ''}
         ${c.summary && (c.summary.adds || c.summary.text) ? `<div class="small">${c.summary.adds ? `Adds <b>${R.esc(c.summary.adds)}</b>` : ''}${c.summary.adds && c.summary.text ? ': ' : ''}${c.summary.text ? `mods ${R.esc(c.summary.text)}` : ''}</div>` : ''}
         ${c.uses != null || (c.reward && c.reward.length) || c.modCount || c.twiceCorrupted ? `<div class="dim small">${[c.uses != null ? `${c.uses} use${c.uses === 1 ? '' : 's'} left` : '', c.modCount ? `${c.modCount} mod${c.modCount === 1 ? '' : 's'}` : '', c.twiceCorrupted ? 'Twice Corrupted' : '', ...(c.reward || [])].filter(Boolean).map(R.esc).join(' · ')}</div>` : ''}
@@ -127,7 +127,7 @@
         <div class="meta">${it.baseType && it.baseType !== it.name ? `${R.esc(it.baseType)} · ` : ''}${R.esc(it.itemClass || '')}${it.itemLevel ? ` · ilvl ${it.itemLevel}` : ''}</div>
         ${opts.closable ? '<button class="x" id="closeBtn" title="Close">×</button>' : ''}
         ${unique && !r.pob ? `<div class="verdict same"><span class="badge">UNIQUE</span>${r.replacing.length && !r.isEquipped ? `<span class="dim">vs ${R.esc(r.replacing.join(' + '))}</span>` : ''}</div>
-          <div class="dim">${r.pobPending ? 'Checking with Path of Building…' : r.game === 'poe1' ? 'Load your Path of Building Community build on My gear to see what it does for your build – or check its price.' : "Uniques have fixed mods, so there's no gear score – check its price, or compare the changes below."}</div>`
+          <div class="dim">${r.pobPending ? 'Checking with Path of Building…' : r.game === 'poe1' ? 'Load your Path of Building Community build on the Character page to see what it does for your build – or check its price.' : "Uniques have fixed mods, so there's no gear score – check its price, or compare the changes below."}</div>`
           : `<div class="verdict ${v.cls}">
           <span class="badge">${v.text}</span>
           ${r.isEquipped || emptySlot || checking ? '' : R.scoreHtml(R.pointsLabel(r))}
@@ -148,8 +148,8 @@
         ${top && !r.isEquipped ? `<div class="chgs">${top}</div>` : ''}
         ${r.unjudged && !r.pobNudge && !r.pob ? `<div class="note">${R.esc(r.unjudged)}</div>` : ''}
         ${r.pobNudge && !r.isEquipped ? (r.game === 'poe1'
-    ? '<div class="note">PoE1 items are judged by Path of Building: paste your <b>Path of Building Community</b> export on <b>My gear</b> (this character is your PoE1 one).</div>'
-    : '<div class="dim small">For exact verdicts, paste your Path of Building export on <b>My gear</b>.</div>') : ''}
+    ? '<div class="note">PoE1 items are judged by Path of Building: paste your <b>Path of Building Community</b> export on the <b>Character</b> page (this character is your PoE1 one).</div>'
+    : '<div class="dim small">For exact verdicts, paste your Path of Building export on the <b>Character</b> page.</div>') : ''}
         ${r.isEquipped ? '' : r.pob || r.pobPending || r.pobError ? window.pobBlock(r.pob, { pending: r.pobPending, error: r.pobError, compact: !full, noBanner: true, lossShown: true, flask: it.slot === 'Flask' }) : window.characterBlock(r.character, { compact: !full, risks: r.risks, noBanner: true })}
         ${r.notes.filter((n) => !/^Nothing saved/.test(n) || (!emptySlot && it.slot !== 'Flask')).filter((n) => full || /unidentified|two-handed|Two-handed/i.test(n)).map((n) => `<div class="note">${R.esc(n)}</div>`).join('')}
         ${emptySlot ? `<div class="actions">${R.equipButtons(r)}</div>` : ''}

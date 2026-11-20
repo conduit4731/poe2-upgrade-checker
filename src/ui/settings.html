@@ -130,27 +130,6 @@
           </div>
         </div>
         <div class="col side-col">
-          <div class="card-p" id="buildCard">
-            <h3>Your build</h3>
-            <div class="help">Paste a Path of Building code or <b>pobb.in</b> link, or link a guide's <b>.build</b> file. Items are then judged with your build's real numbers.</div>
-            <div class="row">
-              <input id="pobInput" class="grow" placeholder="https://pobb.in/abc123  or  eNrtXd…">
-              <button id="pobImport" class="primary">Import</button>
-            </div>
-            <div class="row"><button id="pobLinkFile" class="link" title="Pick the build file Path of Building saves (Documents\Path of Building\Builds), or a guide's .build file (Documents\My Games\Path of Exile 2\BuildPlanner). The app reads it again whenever it changes.">Or link a build file (PoB, or a guide's .build)…</button></div>
-            <div class="note" id="pobMsg"></div>
-            <div id="pobStatus" class="pob-status"></div>
-            <div class="pob-src small" id="pobSource"></div>
-            <div class="ctl-grid" id="pobControls">
-              <label class="ctl-wide"><input type="checkbox" id="pobUse"> Judge items with Path of Building</label>
-              <span class="ctl-label">Weigh</span>
-              <label class="ctl-range" title="How much damage counts against survivability when the app weighs an item"><span class="dim small">Damage</span> <input type="range" id="pobBalance" min="0" max="100" step="10"> <span class="dim small">Survivability</span></label>
-            </div>
-            <details class="fold"><summary>How items are judged</summary>
-              <div class="help">Export from Path of Building with Import/Export Build → Generate (<b>Path of Building 2</b> for PoE2, <b>Path of Building Community</b> for PoE1). Every item is put into your build and Path of Building works out what it does to your damage (or your minions'), effective HP, resistances and <span class="p2">Spirit</span><span class="p1">mana and life reservation</span>.</div>
-              <div class="help">Make sure PoB's tree, skills and Configuration match how you play. Items you copy in game (F2) replace PoB's in their slot. With a guide's .build file, the guide's gear is only used in slots where you haven't saved your own item.</div>
-            </details>
-          </div>
           <div class="card-p" id="resCard">
             <h3>Your resistances</h3>
             <div class="help">The <b>uncapped</b> numbers from your character sheet, with the gear you wear now.</div>
@@ -196,6 +175,36 @@
         <div><h2 id="charTitle">Character</h2><div class="sub" id="charSub">Your character as Path of Building calculates it, with the gear you copied in game.</div></div>
         <div class="page-actions"><button id="charRefresh">Recalculate</button></div>
       </header>
+      <section class="card-p build-panel" id="buildCard">
+        <h3>Build settings</h3>
+        <div class="set-row bp-row">
+          <div class="set-label"><span class="set-name">Build</span><div class="pob-src" id="pobSource"></div><div class="dim" id="pobNone">No build loaded yet.</div></div>
+          <div class="set-ctl"><button id="pobChangeBtn">Load another build…</button></div>
+        </div>
+        <div class="bp-import" id="pobImportRow">
+          <div class="row">
+            <input id="pobInput" class="grow" placeholder="Path of Building code or pobb.in link: https://pobb.in/abc123  or  eNrtXd…" aria-label="Path of Building code or pobb.in link">
+            <button id="pobImport" class="primary">Import</button>
+          </div>
+          <div class="row"><button id="pobLinkFile" class="link" title="Pick the build file Path of Building saves (Documents\Path of Building\Builds), or a guide's .build file (Documents\My Games\Path of Exile 2\BuildPlanner). The app reads it again whenever it changes.">Or link a build file (PoB, or a guide's .build)…</button></div>
+        </div>
+        <div class="note" id="pobMsg"></div>
+        <div id="pobControls">
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Judge items with Path of Building</span><span class="set-desc">Off: items and Find upgrades use the rough gear score instead of your build.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="pobUse"></div>
+          </label>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Damage or survivability</span><span class="set-desc">How much each counts when an item is weighed.</span></div>
+            <div class="set-ctl"><label class="ctl-range" title="How much damage counts against survivability when the app weighs an item"><span class="dim small">Damage</span> <input type="range" id="pobBalance" min="0" max="100" step="10"> <span class="dim small">Survivability</span></label></div>
+          </div>
+        </div>
+        <div id="pobStatus" class="pob-status compact"></div>
+        <details class="fold"><summary>How items are judged</summary>
+          <div class="help">Export from Path of Building with Import/Export Build → Generate (<b>Path of Building 2</b> for PoE2, <b>Path of Building Community</b> for PoE1). Every item is put into your build and Path of Building works out what it does to your damage (or your minions'), effective HP, resistances and <span class="p2">Spirit</span><span class="p1">mana and life reservation</span>.</div>
+          <div class="help">Make sure PoB's tree, skills and Configuration match how you play. Items you copy in game (F2) replace PoB's in their slot. With a guide's .build file, the guide's gear is only used in slots where you haven't saved your own item.</div>
+        </details>
+      </section>
       <div id="charBody"><div class="card-p dim">Loading…</div></div>
     </section>
 
@@ -310,7 +319,7 @@
           <div class="help">What kind of build you play, so the gear score knows which stats matter.</div>
           <div id="gsPicker"></div>
           <div class="gs-starter" id="gsStarter">
-            <b>Playing a league starter or a guide's build?</b> Load it on <button class="link" data-goto="gear">My gear</button> (its pobb.in link, Path of Building code or the guide's <b>.build</b> file). Verdicts then use that exact build, which is far better than any profile.
+            <b>Playing a league starter or a guide's build?</b> Load it on the <button class="link" data-goto="char">Character</button> page (its pobb.in link, Path of Building code or the guide's <b>.build</b> file). Verdicts then use that exact build, which is far better than any profile.
             <div class="gs-sites">Find one: <button class="link" data-site="https://poe.ninja/poe2/builds">poe.ninja builds</button> · <button class="link" data-site="https://mobalytics.gg/poe-2/tier-list">Mobalytics tier list</button></div>
           </div>
           <details class="fold" id="gsEditorFold" open><summary>Gear score editor <span class="dim small fold-why hidden">only used without Path of Building</span></summary>

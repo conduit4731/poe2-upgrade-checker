@@ -47,7 +47,7 @@ module.exports = function (C) {
         C.log(`first ${gamesLib.gameOf(game).short} item: your empty character is now a ${gamesLib.gameOf(game).short} one`);
       } else {
         // first time in this game: a character of its own, so this game's items aren't judged
-        // against the other game's gear (add its Path of Building build on My gear)
+        // against the other game's gear (add its Path of Building build on the Character page)
         C.store.createProfile(`My ${gamesLib.gameOf(game).short} character`, false, game);
         C.log(`first ${gamesLib.gameOf(game).short} item: made a new character for it`);
       }

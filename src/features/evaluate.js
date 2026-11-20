@@ -78,7 +78,7 @@ module.exports = function (C) {
         if (lv && lv.delta < 0) risks.push(`${lv.delta} minion skill level${lv.delta === -1 ? '' : 's'}`);
         // your resistance totals aren't known: a big drop can't be checked against the cap, so it's said
         for (const x of ch.res || []) {
-          if (x.from == null && x.delta <= -10 && (x.el !== 'chaos' || C.pobPriorities().chaos)) risks.push(`${x.label || x.el} ${x.delta}%: type your resistances on My gear (or add your Path of Building build) to see if this takes you under the cap`);
+          if (x.from == null && x.delta <= -10 && (x.el !== 'chaos' || C.pobPriorities().chaos)) risks.push(`${x.label || x.el} ${x.delta}%: type your resistances on My gear (or add your Path of Building build on the Character page) to see if this takes you under the cap`);
         }
       }
       if (risks.length) {

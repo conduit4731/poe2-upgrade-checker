@@ -237,7 +237,7 @@ module.exports = function (C) {
     if (isTimelessJewel(item)) return "Timeless jewels aren't judged yet: their passive changes need data that doesn't come with the app.";
 
     if (!pobCanJudge(item, slot)) return null;
-    if (!pobOn()) return pobEngine().available() ? 'Not judged: PoE1 items are judged by Path of Building only. Paste your Path of Building Community build on My gear.' : "Not judged: Path of Building for PoE1 isn't installed with this copy of the app.";
+    if (!pobOn()) return pobEngine().available() ? 'Not judged: PoE1 items are judged by Path of Building only. Paste your Path of Building Community build on the Character page.' : "Not judged: Path of Building for PoE1 isn't installed with this copy of the app.";
     return null;
   }
   // can Path of Building judge this item? (charms and flasks use the gear score)

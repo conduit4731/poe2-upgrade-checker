@@ -32,7 +32,7 @@
       body.innerHTML = d.sheet ? sheetHtml(d, st) : noPobHtml(d, st);
       $('#charSub').textContent = d.sheet
         ? `Calculated by Path of Building with your build${d.sheet.overridden && d.sheet.overridden.length ? ` and the ${d.sheet.overridden.length} item${d.sheet.overridden.length === 1 ? '' : 's'} you copied in game` : ''}${d.at ? ` · ${new Date(d.at).toLocaleTimeString()}` : ''}.${d.error ? ` Couldn't recalculate just now: ${d.error}` : ''}`
-        : 'Add your Path of Building build on My gear to see your full character sheet.';
+        : 'Load your Path of Building build in Build settings below to see your full character sheet.';
       $('#charRefresh').classList.toggle('hidden', !d.on);
       // widths set here: the page's security policy doesn't allow inline styles
       body.querySelectorAll('[data-w]').forEach((e) => { e.style.width = `${Number(e.dataset.w) || 0}%`; });
@@ -360,14 +360,14 @@
   }
 
   function noPobHtml(d, st) {
-    const why = !d.hasBuild ? 'Paste your Path of Building export on <b>My gear</b> and this page shows your whole character: damage (or your minions\'), defences, resistances against the cap, the biggest hits you can take, ' + (st && st.game === 'poe1' ? 'mana and life reservation' : 'Spirit') + ', attributes, skills and passive tree.'
-      : !d.enabled ? 'Path of Building is switched off on My gear (<b>Judge items with Path of Building</b>). Switch it on to see your character sheet.'
+    const why = !d.hasBuild ? 'Load your Path of Building build in <b>Build settings</b> above and this page shows your whole character: damage (or your minions\'), defences, resistances against the cap, the biggest hits you can take, ' + (st && st.game === 'poe1' ? 'mana and life reservation' : 'Spirit') + ', attributes, skills and passive tree.'
+      : !d.enabled ? 'Path of Building is switched off: tick <b>Judge items with Path of Building</b> in Build settings above to see your character sheet.'
         : !d.available ? 'The Path of Building engine isn\'t included with this copy of the app.' : 'Path of Building isn\'t available right now.';
     const rs = d.resists;
     const res = rs ? card('Resistances (from My gear)', resBars(['fire', 'cold', 'lightning', 'chaos'].filter((el) => rs[el] != null).map((el) => ({ el: el[0].toUpperCase() + el.slice(1), value: Math.min(rs[el], (rs.caps && rs.caps[el]) || rs.cap || 75), total: rs[el], over: rs[el] - ((rs.caps && rs.caps[el]) || rs.cap || 75), max: (rs.caps && rs.caps[el]) || rs.cap || 75 })), false)) : '';
     const gs = st.gearScores || {};
     const gear = card('Gear', table(SLOT_ORDER.map((slot) => { const it = (st.equipped || {})[slot]; const g = gs[slot]; return it ? row(slot, `${esc(it.name)}${g && g.score != null ? ` <span class="gs g-${esc(g.grade)}">${g.score} ${esc(g.grade)}</span>` : ''}`) : ''; })));
-    return `<div class="card-p"><h3>Your character sheet</h3><div class="help">${why}</div><div class="row"><button class="primary" data-goto="gear">Go to My gear</button></div></div><div class="grid g-cards">${res}${gear}<div class="card-p" id="strBox"></div></div>`;
+    return `<div class="card-p"><h3>Your character sheet</h3><div class="help">${why}</div></div><div class="grid g-cards">${res}${gear}<div class="card-p" id="strBox"></div></div>`;
   }
 
   document.querySelector('.tabs button[data-tab="char"]').addEventListener('click', () => render(false));

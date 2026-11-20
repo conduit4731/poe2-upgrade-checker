@@ -138,7 +138,7 @@
           <span class="vchip risky">UPGRADE, BUT…</span> better, but it costs reservation, links or a resistance below the cap ·
           <span class="vchip down">LOSES RESISTANCE</span> a resistance drops off the cap · <span class="vchip down">LOSES DAMAGE</span> your damage drops. Both go to the bottom of the results.</li>
         <li>Rings are compared with your weakest ring, jewels in each of your sockets, flasks in your flask slots. Cluster and timeless jewels aren't judged yet.</li>
-        ${opts.pobOn ? '' : '<li><b>No build loaded:</b> paste your Path of Building Community export on My gear, or items get no verdict.</li>'}
+        ${opts.pobOn ? '' : '<li><b>No build loaded:</b> paste your Path of Building Community export on the Character page, or items get no verdict.</li>'}
       </ul></div>`;
     }
     return `<div class="gs-explain">
@@ -158,7 +158,7 @@
           <span class="vchip down">LOSES DAMAGE</span> your damage drops (when <b>Never lose damage</b> is on); both go to the bottom of the results.</li>
         ${opts.pobOn
     ? `<li><b>The verdicts use your whole build.</b> Path of Building knows your passive tree, skill gems and Configuration, so the verdict and the PoB line under each listing show the real change to your damage, effective HP and resistances${opts.where ? `. The gear score is tuned on the ${opts.where}` : ''}.</li>`
-    : `<li><b>It isn't a damage calculator.</b> It doesn't know your passive tree or skill gems. Check <b>If you equip it</b> under each listing for what changes on your character${opts.where ? `, and tune what each stat is worth on the ${opts.where}` : ''}. Add your Path of Building build on My gear for exact verdicts.</li>`}
+    : `<li><b>It isn't a damage calculator.</b> It doesn't know your passive tree or skill gems. Check <b>If you equip it</b> under each listing for what changes on your character${opts.where ? `, and tune what each stat is worth on the ${opts.where}` : ''}. Add your Path of Building build on the Character page for exact verdicts.</li>`}
       </ul></div>`;
   };
 
