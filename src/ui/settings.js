@@ -247,6 +247,30 @@ document.addEventListener('click', (e) => {
   document.querySelectorAll('details.slot-more[open]').forEach((o) => { o.open = false; });
 });
 
+// Settings page: the section index jumps to its section, and marks the one you're reading
+document.querySelectorAll('.set-toc [data-jump]').forEach((b) => b.addEventListener('click', () => {
+  const s = document.getElementById(b.dataset.jump); const main = document.querySelector('.main');
+  if (!s || !main) return;
+  main.scrollTop += s.getBoundingClientRect().top - main.getBoundingClientRect().top - 16;
+  document.querySelectorAll('.set-toc [data-jump]').forEach((x) => x.classList.toggle('active', x === b));
+}));
+(function () {
+  const main = document.querySelector('.main');
+  if (!main) return;
+  let t = null;
+  main.addEventListener('scroll', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      if (!document.querySelector('#tab-options.active')) return;
+      const top = main.getBoundingClientRect().top + 120;
+      let cur = null;
+      document.querySelectorAll('.set-section').forEach((s) => { if (s.getBoundingClientRect().top <= top) cur = s.id; });
+      if (!cur) { const first = document.querySelector('.set-section'); cur = first && first.id; }
+      document.querySelectorAll('.set-toc [data-jump]').forEach((b) => b.classList.toggle('active', b.dataset.jump === cur));
+    }, 60);
+  });
+}());
+
 // Discord community (sidebar and Settings → Startup & updates): opens poe2upgrade.com/discord in the browser
 document.querySelectorAll('[data-discord]').forEach((b) => b.addEventListener('click', () => window.api.openUrl('https://poe2upgrade.com/discord')));
 // Support the project (Settings → Startup & updates): opens the Ko-fi page in the browser

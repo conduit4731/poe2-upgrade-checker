@@ -372,115 +372,185 @@
 
     <section class="tab" id="tab-options">
       <header class="page-head">
-        <div><h2>Settings</h2><div class="sub">Hotkeys, the popup, startup and updates.</div></div>
+        <div><h2>Settings</h2><div class="sub">Hotkeys, the popup, how this window looks, your trade site account, startup and your data.</div></div>
       </header>
-      <div class="opts">
-      <div class="opt-col">
-      <div class="card-p">
-        <h3>Hotkeys</h3>
-        <div class="kv">
-          <span class="k">Check item</span>
-          <span class="v"><input id="hotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Check item hotkey"><button id="hotkeySave">Save</button></span>
-          <span id="hotkeyMsg" class="note"></span>
-          <span class="k">Price only</span>
-          <span class="v"><input id="priceHotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Price only hotkey"><button id="priceHotkeySave">Save</button><button class="link" id="priceHotkeyOff" title="No price-only hotkey">Turn off</button></span>
-          <span id="priceHotkeyMsg" class="note"></span>
-          <span class="k" title="Hover an item you wear (character screen, C) and press it: saved in its slot, no popup click">Save as equipped</span>
-          <span class="v"><input id="equipHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Save as equipped hotkey"><button id="equipHotkeySave">Save</button><button class="link" id="equipHotkeyOff" title="No save-as-equipped hotkey">Turn off</button></span>
-          <span id="equipHotkeyMsg" class="note"></span>
-          <span class="k" title="Copies a search string for the game's search box (Ctrl+F): vendors and stash, maps without your dangerous mods, your own saved strings. Press again for the next.">Search strings</span>
-          <span class="v"><input id="stringsHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Search strings hotkey"><button id="stringsHotkeySave">Save</button><button class="link" id="stringsHotkeyOff" title="No search strings hotkey">Turn off</button></span>
-          <span id="stringsHotkeyMsg" class="note"></span>
-          <span class="k" title="Shows or hides the loot filter editor over the game">Loot filter editor</span>
-          <span class="v"><input id="filterHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Loot filter editor hotkey"><button id="filterHotkeySave">Save</button><button class="link" id="filterHotkeyOff" title="No loot filter editor hotkey">Turn off</button></span>
-          <span id="filterHotkeyMsg" class="note"></span>
-          <span class="k" title="Shows or hides the search string builder over the game: build a search for maps, waystones or any item">Search string builder</span>
-          <span class="v"><input id="regexHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Search string builder hotkey"><button id="regexHotkeySave">Save</button><button class="link" id="regexHotkeyOff" title="No search string builder hotkey">Turn off</button></span>
-          <span id="regexHotkeyMsg" class="note"></span>
-          <span class="k">Results window</span>
-          <span class="v"><input id="resultsHotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Show or hide the results window"><button id="resultsHotkeySave">Save</button></span>
-          <span id="resultsHotkeyMsg" class="note"></span>
+      <div class="set-layout">
+        <nav class="set-toc" aria-label="Settings sections">
+          <button data-jump="set-hotkeys" class="active">Hotkeys</button>
+          <button data-jump="set-copy">Copying items</button>
+          <button data-jump="set-popup">Popup</button>
+          <button data-jump="set-display">Display</button>
+          <button data-jump="set-account">Trade site account</button>
+          <button data-jump="set-startup">Startup &amp; updates</button>
+          <button data-jump="set-data">Your data</button>
+          <button data-jump="set-help">Help &amp; troubleshooting</button>
+        </nav>
+        <div class="set-body">
+
+        <section class="set-section" id="set-hotkeys">
+          <h3 class="set-h">Hotkeys</h3>
+          <p class="set-intro">Click a box, press the keys, then <b>Save</b>. In game, hover an item and press the hotkey: the app presses Ctrl+C for you, once per press. F-keys work best (with WASD, D walks your character).</p>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Check item</span><span class="set-desc">The full popup: is it an upgrade for your build, and what it's worth.</span></div>
+            <div class="set-ctl"><input id="hotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Check item hotkey"><button id="hotkeySave">Save</button><span id="hotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Price only</span><span class="set-desc">A small popup with just the item's price.</span></div>
+            <div class="set-ctl"><input id="priceHotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Price only hotkey"><button id="priceHotkeySave">Save</button><button class="link" id="priceHotkeyOff" title="No price-only hotkey">Turn off</button><span id="priceHotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Save as equipped</span><span class="set-desc">Hover an item you wear (character screen) and press it: saved in its slot, no popup.</span></div>
+            <div class="set-ctl"><input id="equipHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Save as equipped hotkey"><button id="equipHotkeySave">Save</button><button class="link" id="equipHotkeyOff" title="No save-as-equipped hotkey">Turn off</button><span id="equipHotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Results window</span><span class="set-desc">Shows or hides the trade results window.</span></div>
+            <div class="set-ctl"><input id="resultsHotkey" class="hotkey" readonly placeholder="click, then press keys" aria-label="Show or hide the results window"><button id="resultsHotkeySave">Save</button><span id="resultsHotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Search strings</span><span class="set-desc">Copies a search for the game's search box (Ctrl+F): vendors, stash, maps without your dangerous mods. Press again for the next one.</span></div>
+            <div class="set-ctl"><input id="stringsHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Search strings hotkey"><button id="stringsHotkeySave">Save</button><button class="link" id="stringsHotkeyOff" title="No search strings hotkey">Turn off</button><span id="stringsHotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Search string builder</span><span class="set-desc">Shows or hides the builder over the game, for maps, waystones or any item.</span></div>
+            <div class="set-ctl"><input id="regexHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Search string builder hotkey"><button id="regexHotkeySave">Save</button><button class="link" id="regexHotkeyOff" title="No search string builder hotkey">Turn off</button><span id="regexHotkeyMsg" class="note"></span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Loot filter editor</span><span class="set-desc">Shows or hides the loot filter editor over the game.</span></div>
+            <div class="set-ctl"><input id="filterHotkey" class="hotkey" readonly placeholder="Off: click to set" aria-label="Loot filter editor hotkey"><button id="filterHotkeySave">Save</button><button class="link" id="filterHotkeyOff" title="No loot filter editor hotkey">Turn off</button><span id="filterHotkeyMsg" class="note"></span></div>
+          </div>
+        </section>
+
+        <section class="set-section" id="set-copy">
+          <h3 class="set-h">Copying items</h3>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Check gear when I press Ctrl+C myself</span><span class="set-desc">Not only with the hotkey.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="watchClipboard"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Keep my saved gear up to date when I craft on it</span><span class="set-desc">Checking one of your saved items again saves its new mods. Matched by base, item level and name (or its mods, for magic and normal items).</span></div>
+            <div class="set-ctl"><input type="checkbox" id="autoUpdateGear"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Use advanced copy (Ctrl+Alt+C)</span><span class="set-desc">The item text then shows which mods are prefixes and suffixes.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="advancedCopy"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Pause</span><span class="set-desc">Ignore the hotkeys and the clipboard until you untick it.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="paused"></div>
+          </label>
+        </section>
+
+        <section class="set-section" id="set-popup">
+          <h3 class="set-h">Popup</h3>
+          <p class="set-intro">Drag the popup by its name to move it. It stays open while your mouse is over it.</p>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Position</span></div>
+            <div class="set-ctl"><select id="popupPosition" aria-label="Popup position">
+              <option value="cursor">Next to the mouse</option>
+              <option value="left">Left side of the screen</option>
+              <option value="right">Right side of the screen</option>
+              <option value="top">Top of the screen</option>
+              <option value="dragged">Where I dragged it</option>
+            </select></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Hide after</span></div>
+            <div class="set-ctl"><input type="number" id="autoHide" min="2" max="120" class="num" aria-label="Hide the popup after this many seconds"> <span class="dim">seconds</span></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Detail</span></div>
+            <div class="set-ctl"><select id="popupDetail" aria-label="Popup detail">
+              <option value="compact">Compact (More &#9662; for the rest)</option>
+              <option value="full">Always show everything</option>
+            </select></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Size</span></div>
+            <div class="set-ctl"><select id="uiScale" aria-label="Popup size">
+              <option value="0.9">Small</option><option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option>
+            </select></div>
+          </div>
+        </section>
+
+        <section class="set-section" id="set-display">
+          <h3 class="set-h">Display</h3>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Window text size</span><span class="set-desc">This window and the results window. <b>Auto</b> grows the text with the window, so a maximised window on a 1440p or 4K screen stays readable.</span></div>
+            <div class="set-ctl"><select id="appScale" aria-label="Window text size">
+              <option value="auto">Auto: grows with the window</option>
+              <option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option><option value="1.5">Huge</option>
+            </select></div>
+          </div>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Colour-blind friendly colours</span><span class="set-desc">Blue for better, orange for worse, everywhere.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="colorblind"></div>
+          </label>
+        </section>
+
+        <section class="set-section" id="set-account">
+          <h3 class="set-h">Trade site account <span class="set-opt">optional</span></h3>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">pathofexile.com</span><span class="set-desc">Signed in, searches can be much bigger (signed out, the trade site rejects most build searches as "too complex") and <b>Travel to hideout</b> works from the results. Your password goes only to pathofexile.com.</span></div>
+            <div class="set-ctl set-ctl-col"><span class="set-status" id="signStatus"></span><span class="set-btns"><button id="signIn" class="primary">Sign in…</button><button id="signOut">Sign out</button></span></div>
+          </div>
+        </section>
+
+        <section class="set-section" id="set-startup">
+          <h3 class="set-h">Startup &amp; updates</h3>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name"><span id="startWithLabel">Start with Windows</span></span><span class="set-desc">Quietly, in the tray.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="startWithWindows"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Open this window when the app starts</span></div>
+            <div class="set-ctl"><input type="checkbox" id="openSettingsOnStart"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Download updates automatically</span></div>
+            <div class="set-ctl"><input type="checkbox" id="autoUpdate"></div>
+          </label>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Get beta versions</span><span class="set-desc" id="betaNote">Betas get new features a little earlier and can have bugs. If something breaks, send the log to support@poe2upgrade.com.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="betaUpdates"></div>
+          </label>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Updates</span><span class="set-desc" id="updStatus"></span></div>
+            <div class="set-ctl"><button id="updCheck">Check for updates</button><button class="primary hidden" id="updAction"></button><button class="link" id="whatsNewBtn">What&rsquo;s new</button></div>
+          </div>
+        </section>
+
+        <section class="set-section" id="set-data">
+          <h3 class="set-h">Your data</h3>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Back up &amp; restore</span><span class="set-desc" id="backupMsg">One file with your characters, gear, Path of Building builds, priorities, saved searches, hotkeys and League start progress, for a new PC or a reinstall. Restoring keeps what you have now as a copy next to it.</span></div>
+            <div class="set-ctl"><button id="backupExport">Back up to a file…</button><button id="backupImport">Restore…</button></div>
+          </div>
+          <label class="set-row set-check">
+            <div class="set-label"><span class="set-name">Send anonymous usage statistics</span><span class="set-desc">Only numbers and yes/no answers: no account, character, items, builds or searches.</span></div>
+            <div class="set-ctl"><input type="checkbox" id="usageStats"></div>
+          </label>
+          <details class="fold set-fold"><summary>What&rsquo;s sent</summary>
+            <p class="set-intro">One small message to poe2upgrade.com when the app starts and every few hours: a random install number (made on this PC), the app version, Windows or Linux, beta or not, which game you used that day, how many times you used each part that day (item checks, price checks, trade searches, League start steps), how far it's set up (yes/no: guide done, build loaded, gear saved, an item checked) and how many times something went wrong (hotkey not registered, Path of Building failed, trade search failed). Only numbers and yes/no: no account, character, items, builds or what you searched for, and the site doesn't keep IP addresses.</p>
+          </details>
+        </section>
+
+        <section class="set-section" id="set-help">
+          <h3 class="set-h">Help &amp; troubleshooting</h3>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Popup doesn't show in game?</span><span class="set-desc">If the test popup shows here but not in game, set the game to <b>Windowed Fullscreen</b> (Options → Graphics).</span></div>
+            <div class="set-ctl"><button id="testPopup">Show a test popup</button></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Hotkey does nothing?</span><span class="set-desc">The log says why. Your data is in <span id="dataDirText">%APPDATA%\PoE2 Upgrade Checker</span>.</span></div>
+            <div class="set-ctl"><button id="openLog">Open log file</button></div>
+          </div>
+          <div class="set-row">
+            <div class="set-label"><span class="set-name">Community</span><span class="set-desc">News, help and ideas from the original app's author.</span></div>
+            <div class="set-ctl"><button class="link" type="button" data-discord title="Opens poe2upgrade.com/discord in your browser">Discord</button><button class="link" type="button" data-kofi title="Opens ko-fi.com/akwhitesoftware in your browser">Support on Ko-fi</button></div>
+          </div>
+        </section>
+
         </div>
-        <div class="help">Hover an item in game and press a hotkey; the app presses Ctrl+C for you (once per press). Use a key the game doesn&rsquo;t: F-keys work best (with WASD, D walks your character).</div>
-        <div class="row"><label><input type="checkbox" id="watchClipboard"> Also check gear when I press Ctrl+C myself</label></div>
-        <div class="row"><label title="When you check one of your saved items again and its mods changed (you crafted on it), it's saved as it is now. Matched by its base, item level and name (or its mods, for magic and normal items)."><input type="checkbox" id="autoUpdateGear"> Keep my saved gear up to date when I craft on it</label></div>
-        <div class="row"><label><input type="checkbox" id="advancedCopy"> Use advanced copy (Ctrl+Alt+C), which shows prefixes and suffixes</label></div>
-      </div>
-      <div class="card-p">
-        <h3>Trade site account <span class="dim small">optional</span></h3>
-        <div class="row"><button id="signIn">Sign in…</button><button id="signOut">Sign out</button><span class="dim" id="signStatus"></span></div>
-        <div class="help">Signing in to pathofexile.com lets you <b>Travel to hideout</b> from the results and makes searches fuller. Your password goes only to pathofexile.com.</div>
-      </div>
-      </div>
-      <div class="opt-col">
-      <div class="card-p">
-        <h3>Popup</h3>
-        <div class="kv">
-          <span class="k">Position</span>
-          <span class="v"><select id="popupPosition">
-            <option value="cursor">Next to the mouse</option>
-            <option value="left">Left side of the screen</option>
-            <option value="right">Right side of the screen</option>
-            <option value="top">Top of the screen</option>
-            <option value="dragged">Where I dragged it</option>
-          </select></span><span></span>
-          <span class="k">Hide after</span>
-          <span class="v"><input type="number" id="autoHide" min="2" max="120" class="num" aria-label="Hide the popup after this many seconds"> seconds</span><span></span>
-          <span class="k">Detail</span>
-          <span class="v"><select id="popupDetail">
-            <option value="compact">Compact (More &#9662; for the rest)</option>
-            <option value="full">Always show everything</option>
-          </select></span><span></span>
-          <span class="k">Popup size</span>
-          <span class="v"><select id="uiScale">
-            <option value="0.9">Small</option><option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option>
-          </select></span><span></span>
-          <span class="k">Window text size</span>
-          <span class="v"><select id="appScale" title="This window and the results window">
-            <option value="auto">Auto: grows with the window</option>
-            <option value="1">Normal</option><option value="1.15">Large</option><option value="1.3">Extra large</option><option value="1.5">Huge</option>
-          </select></span><span></span>
-        </div>
-        <div class="help">Drag the popup by its name to move it. It stays open while your mouse is over it. <b>Auto</b> makes this window's text bigger as the window gets bigger, so a maximised window on a 1440p or 4K screen stays readable.</div>
-        <div class="row"><label><input type="checkbox" id="colorblind"> Colour-blind friendly colours (blue = better, orange = worse)</label></div>
-        <div class="row"><label><input type="checkbox" id="paused"> Pause (ignore the hotkeys and the clipboard)</label></div>
-      </div>
-      <div class="card-p">
-        <h3>Usage statistics</h3>
-        <div class="row"><label><input type="checkbox" id="usageStats"> Send anonymous usage statistics</label></div>
-        <details class="fold help"><summary>What&rsquo;s sent</summary>
-          One small message to poe2upgrade.com when the app starts and every few hours: a random install number (made on this PC), the app version, Windows or Linux, beta or not, which game you used that day, how many times you used each part that day (item checks, price checks, trade searches, League start steps), how far it's set up (yes/no: guide done, build loaded, gear saved, an item checked) and how many times something went wrong (hotkey not registered, Path of Building failed, trade search failed). Only numbers and yes/no: no account, character, items, builds or what you searched for, and the site doesn't keep IP addresses.
-        </details>
-      </div>
-      </div>
-      <div class="opt-col">
-      <div class="card-p">
-        <h3>Startup &amp; updates</h3>
-        <div class="row"><label><input type="checkbox" id="startWithWindows"> <span id="startWithLabel">Start with Windows</span> (quietly, in the tray)</label></div>
-        <div class="row"><label><input type="checkbox" id="openSettingsOnStart"> Open this window when the app starts</label></div>
-        <div class="row"><label><input type="checkbox" id="autoUpdate"> Download updates automatically</label></div>
-        <div class="row"><label><input type="checkbox" id="betaUpdates"> Get beta versions</label></div>
-        <div class="help" id="betaNote">Betas get new features a little earlier and can have bugs. If something breaks, send the log to support@poe2upgrade.com.</div>
-        <div class="row"><button id="updCheck">Check for updates</button><button class="link" id="whatsNewBtn">What&rsquo;s new</button><button class="link" type="button" data-discord title="Opens poe2upgrade.com/discord in your browser">Discord: news, help &amp; ideas</button><button class="link" type="button" data-kofi title="Opens ko-fi.com/akwhitesoftware in your browser">Support on Ko-fi</button><button class="primary hidden" id="updAction"></button></div>
-        <div class="help" id="updStatus"></div>
-      </div>
-      <div class="card-p">
-        <h3>Back up &amp; restore</h3>
-        <div class="row"><button id="backupExport">Back up to a file…</button><button id="backupImport">Restore…</button></div>
-        <div class="help" id="backupMsg">One file with your characters, gear, Path of Building builds, priorities, saved searches, hotkeys and League start progress: for a new PC or a reinstall. Restoring keeps what you have now as a copy next to it.</div>
-      </div>
-      <div class="card-p">
-        <h3>Troubleshooting</h3>
-        <div class="row">
-          <button id="testPopup">Show a test popup</button>
-          <button id="openLog">Open log file</button>
-        </div>
-        <div class="help">
-          Test popup shows here but not in game? Set the game to <b>Windowed Fullscreen</b> (Options → Graphics).
-          Hotkey does nothing? Open the log. Your data is in <span id="dataDirText">%APPDATA%\PoE2 Upgrade Checker</span>.
-      </div>
-        </div>
-      </div>
       </div>
     </section>
   </main>
